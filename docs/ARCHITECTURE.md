@@ -46,14 +46,19 @@ ce qui est un argument fort pour un outil de surveillance.
 | Contribution | CNN compact sur log-mel (ESC-50, option UrbanSound8K) | entraîné dans `ml/` | ONNX | comparaison avec la référence, familles critiques |
 | Anomalie | Autoencodeur convolutif sur log-mel | entraîné dans `ml/` | ONNX | score d'anomalie |
 | Précision (bonus) | AST fine-tuné AudioSet | pré-entraîné, via Transformers.js | ONNX quantifié | ré-analyse à la demande, WebGPU |
-| Référence hors-ligne | PANNs CNN14 | pré-entraîné | PyTorch | comparaison dans le rapport d'évaluation uniquement |
+| Référence hors-ligne | YAMNet + régression logistique | pré-entraîné | TFLite (LiteRT) | sonde linéaire sur ESC-50, rapport d'évaluation uniquement |
+| Référence hors-ligne (bonus) | PANNs CNN14 / AST | pré-entraîné | PyTorch | reportés aux bonus |
 
 Vérifier les identifiants exacts des modèles et leurs licences au moment de l'intégration.
 
 ### Classifieur (ml/)
 
 - Entrée : forme d'onde 16 kHz, 1 s (ou 5 s pour l'entraînement ESC-50 avec recadrage aléatoire).
-- Front-end dans le graphe : STFT (n_fft 1024, pas 160 ou 320), 64 bandes mel, log, normalisation.
+- Front-end dans le graphe : STFT par convolution (n_fft 512, fenêtre de Hann, pas 160, sans
+  remplissage), 64 bandes mel de 50 Hz à 8 kHz (échelle de Slaney), log, normalisation globale
+  apprise sur l'entraînement. n_fft 512 plutôt que 1024 : les noyaux de STFT pèsent environ 1 Mo
+  au lieu de 4,2 Mo, et ils sont présents dans chacun des deux modèles exportés.
+- Implémenté dans `ml/soundguard_ml/frontend.py` sans torchaudio ; banc mel vérifié contre librosa.
 - Corps : 4 à 6 blocs conv-BN-ReLU-pool, pooling global, tête linéaire. Moins de 2 M de paramètres.
 - Augmentations : décalage temporel, mixup, SpecAugment, bruit de fond.
 - Évaluation : validation croisée sur les 5 plis officiels d'ESC-50 (ne jamais mélanger les plis),
