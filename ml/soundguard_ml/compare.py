@@ -55,7 +55,12 @@ def main() -> None:
             *[
                 f"| {label} | {ae['mean'][p + 'clip_auc']:.3f} ± {ae['std'][p + 'clip_auc']:.3f} "
                 f"| {ae['mean'][p + 'clip_pauc']:.3f} | {ae['mean'][p + 'window_auc']:.3f} |"
-                for label, p in [("reconstruction", ""), ("embedding", "emb_"), ("combiné", "comb_")]
+                for label, p in [
+                    ("reconstruction", ""),
+                    ("embedding", "emb_"),
+                    ("combiné (max des z, navigateur)", "comb_"),
+                    ("somme des z", "sum_"),
+                ]
             ],
             "",
             f"Taille {size('autoencoder')}. Détails : `autoencoder.md`.",

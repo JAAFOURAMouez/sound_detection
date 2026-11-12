@@ -171,12 +171,16 @@ def main() -> None:
             train_dist = embedding_distance(train_emb, mean, var)
             rec, emb, window_rows = window_outputs(model, cfg, dataset, test_rows)
             dist = embedding_distance(emb, mean, var)
-            combined = robust_z(rec, train_rec) + robust_z(dist, train_dist)
+            z_rec, z_dist = robust_z(rec, train_rec), robust_z(dist, train_dist)
+            # Règle du navigateur : le plus grand des deux z (la somme est gardée pour comparaison).
+            combined = np.maximum(z_rec, z_dist)
+            summed = z_rec + z_dist
             labels = is_anomaly[test_rows].astype(int)
             window_labels = is_anomaly[window_rows].astype(int)
             clip_scores = clip_max(rec, window_rows, test_rows)
             clip_dist = clip_max(dist, window_rows, test_rows)
             clip_comb = clip_max(combined, window_rows, test_rows)
+            clip_sum = clip_max(summed, window_rows, test_rows)
             result = {
                 "fold": test_fold,
                 "clip_auc": roc_auc(labels, clip_scores),
@@ -188,6 +192,9 @@ def main() -> None:
                 "comb_clip_auc": roc_auc(labels, clip_comb),
                 "comb_clip_pauc": partial_auc(labels, clip_comb, max_fpr),
                 "comb_window_auc": roc_auc(window_labels, combined),
+                "sum_clip_auc": roc_auc(labels, clip_sum),
+                "sum_clip_pauc": partial_auc(labels, clip_sum, max_fpr),
+                "sum_window_auc": roc_auc(window_labels, summed),
             }
             per_fold.append(result)
             all_scores.append(clip_scores)

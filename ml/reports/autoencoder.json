@@ -43,7 +43,7 @@
     }
   },
   "epochs": 80,
-  "git": "6a68c96",
+  "git": "5d0f485",
   "device": "cuda",
   "parameters": 70793,
   "anomaly_classes": [
@@ -65,9 +65,12 @@
       "emb_clip_auc": 0.6701078869047619,
       "emb_clip_pauc": 0.04557291666666668,
       "emb_window_auc": 0.5454435122037063,
-      "comb_clip_auc": 0.6240234375,
-      "comb_clip_pauc": 0.07979910714285715,
-      "comb_window_auc": 0.555730777370444
+      "comb_clip_auc": 0.6803385416666667,
+      "comb_clip_pauc": 0.06677827380952381,
+      "comb_window_auc": 0.6115696461202023,
+      "sum_clip_auc": 0.6240234375,
+      "sum_clip_pauc": 0.07979910714285715,
+      "sum_window_auc": 0.555730777370444
     },
     {
       "fold": 2,
@@ -77,9 +80,12 @@
       "emb_clip_auc": 0.6655040922619048,
       "emb_clip_pauc": 0.14369419642857142,
       "emb_window_auc": 0.6010975468264952,
-      "comb_clip_auc": 0.6376488095238095,
-      "comb_clip_pauc": 0.1259300595238095,
-      "comb_window_auc": 0.5948443455892964
+      "comb_clip_auc": 0.6727585565476191,
+      "comb_clip_pauc": 0.13904389880952384,
+      "comb_window_auc": 0.623644161084841,
+      "sum_clip_auc": 0.6376488095238095,
+      "sum_clip_pauc": 0.1259300595238095,
+      "sum_window_auc": 0.5948443455892964
     },
     {
       "fold": 3,
@@ -89,9 +95,12 @@
       "emb_clip_auc": 0.672665550595238,
       "emb_clip_pauc": 0.12007068452380958,
       "emb_window_auc": 0.5913261125164785,
-      "comb_clip_auc": 0.5852399553571428,
-      "comb_clip_pauc": 0.16778273809523808,
-      "comb_window_auc": 0.5742930066691068
+      "comb_clip_auc": 0.7013578869047619,
+      "comb_clip_pauc": 0.15392485119047622,
+      "comb_window_auc": 0.6348283490478951,
+      "sum_clip_auc": 0.5852399553571428,
+      "sum_clip_pauc": 0.16778273809523808,
+      "sum_window_auc": 0.5742930066691068
     },
     {
       "fold": 4,
@@ -101,9 +110,12 @@
       "emb_clip_auc": 0.7152622767857142,
       "emb_clip_pauc": 0.15885416666666669,
       "emb_window_auc": 0.5880240671402385,
-      "comb_clip_auc": 0.6402994791666667,
-      "comb_clip_pauc": 0.08165922619047619,
-      "comb_window_auc": 0.5863035519319594
+      "comb_clip_auc": 0.7264229910714286,
+      "comb_clip_pauc": 0.06687127976190477,
+      "comb_window_auc": 0.6359260780640762,
+      "sum_clip_auc": 0.6402994791666667,
+      "sum_clip_pauc": 0.08165922619047619,
+      "sum_window_auc": 0.5863035519319594
     },
     {
       "fold": 5,
@@ -113,9 +125,12 @@
       "emb_clip_auc": 0.6895926339285714,
       "emb_clip_pauc": 0.12453497023809525,
       "emb_window_auc": 0.5665553655090354,
-      "comb_clip_auc": 0.6502511160714286,
-      "comb_clip_pauc": 0.09895833333333334,
-      "comb_window_auc": 0.6113333829106864
+      "comb_clip_auc": 0.7070777529761905,
+      "comb_clip_pauc": 0.0923549107142857,
+      "comb_window_auc": 0.6521246374656058,
+      "sum_clip_auc": 0.6502511160714286,
+      "sum_clip_pauc": 0.09895833333333334,
+      "sum_window_auc": 0.6113333829106864
     }
   ],
   "mean": {
@@ -125,9 +140,12 @@
     "emb_clip_auc": 0.682626488095238,
     "emb_clip_pauc": 0.11854538690476193,
     "emb_window_auc": 0.5784893208391908,
-    "comb_clip_auc": 0.6274925595238094,
-    "comb_clip_pauc": 0.11082589285714287,
-    "comb_window_auc": 0.5845010128942987
+    "comb_clip_auc": 0.6975911458333334,
+    "comb_clip_pauc": 0.10379464285714286,
+    "comb_window_auc": 0.631618574356524,
+    "sum_clip_auc": 0.6274925595238094,
+    "sum_clip_pauc": 0.11082589285714287,
+    "sum_window_auc": 0.5845010128942987
   },
   "std": {
     "clip_auc": 0.02190173473725817,
@@ -136,50 +154,53 @@
     "emb_clip_auc": 0.018235865660500603,
     "emb_clip_pauc": 0.03903957837974664,
     "emb_window_auc": 0.020006355230674344,
-    "comb_clip_auc": 0.02272635416169246,
-    "comb_clip_pauc": 0.03294362735166419,
-    "comb_window_auc": 0.018773063693013306
+    "comb_clip_auc": 0.01923418412296307,
+    "comb_clip_pauc": 0.03638670533030577,
+    "comb_window_auc": 0.013527059225466266,
+    "sum_clip_auc": 0.02272635416169246,
+    "sum_clip_pauc": 0.03294362735166419,
+    "sum_window_auc": 0.018773063693013306
   },
   "per_class_auc": {
     "glass_breaking": {
       "reconstruction": 0.5163244047619047,
       "embedding": 0.8249702380952382,
-      "combined": 0.48400297619047616
+      "combined": 0.7237797619047621
     },
     "siren": {
       "reconstruction": 0.7819196428571429,
       "embedding": 0.6189880952380953,
-      "combined": 0.8017113095238095
+      "combined": 0.7120386904761905
     },
     "crying_baby": {
       "reconstruction": 0.9148065476190476,
       "embedding": 0.5486309523809524,
-      "combined": 0.8915773809523809
+      "combined": 0.8691815476190476
     },
     "door_wood_knock": {
       "reconstruction": 0.4994940476190477,
       "embedding": 0.8244047619047619,
-      "combined": 0.4636458333333333
+      "combined": 0.7260565476190477
     },
     "chainsaw": {
       "reconstruction": 0.2779166666666667,
       "embedding": 0.7733035714285715,
-      "combined": 0.6327232142857143
+      "combined": 0.6577083333333333
     },
     "fireworks": {
       "reconstruction": 0.6205357142857143,
       "embedding": 0.49854166666666666,
-      "combined": 0.5335416666666667
+      "combined": 0.6097172619047619
     },
     "car_horn": {
       "reconstruction": 0.6364583333333333,
       "embedding": 0.6167857142857143,
-      "combined": 0.6425595238095237
+      "combined": 0.5745982142857143
     },
     "can_opening": {
       "reconstruction": 0.5915625,
       "embedding": 0.7483630952380953,
-      "combined": 0.563764880952381
+      "combined": 0.6926488095238095
     }
   }
 }

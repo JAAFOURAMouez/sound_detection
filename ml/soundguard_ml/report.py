@@ -112,8 +112,9 @@ def write_autoencoder_report(summary: dict[str, Any], reports: Path, name: str =
         "- **embedding** : distance de Mahalanobis (covariance diagonale) entre l'embedding du goulot",
         "  et la distribution des embeddings d'entraînement — c'est le principe de la calibration",
         "  locale prévue dans le navigateur (phase 4), ici avec une « ambiance » de 42 classes variées ;",
-        "- **combiné** : somme des deux scores normalisés par médiane et MAD des fenêtres d'entraînement",
-        "  (la normalisation `médiane + k × MAD` prévue dans le navigateur).",
+        "- **combiné** : le plus grand des deux scores normalisés par médiane et MAD des fenêtres",
+        "  d'entraînement (règle du navigateur, seuil `médiane + k × MAD`) ; la **somme** des deux est",
+        "  donnée pour comparaison.",
         "",
         "Score d'un clip = maximum sur ses fenêtres sonores.",
         "",
@@ -123,8 +124,9 @@ def write_autoencoder_report(summary: dict[str, Any], reports: Path, name: str =
         "|---|---|---|---|",
         f"| reconstruction | {ms('clip_auc')} | {ms('clip_pauc')} | {ms('window_auc')} |",
         f"| embedding | {ms('emb_clip_auc')} | {ms('emb_clip_pauc')} | {ms('emb_window_auc')} |",
-        f"| **combiné** | **{ms('comb_clip_auc')}** | **{ms('comb_clip_pauc')}** "
+        f"| **combiné (max)** | **{ms('comb_clip_auc')}** | **{ms('comb_clip_pauc')}** "
         f"| **{ms('comb_window_auc')}** |",
+        f"| somme | {ms('sum_clip_auc')} | {ms('sum_clip_pauc')} | {ms('sum_window_auc')} |",
         "",
         "## Par pli",
         "",

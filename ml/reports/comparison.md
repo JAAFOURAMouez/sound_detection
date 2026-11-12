@@ -16,7 +16,8 @@ fenêtres de 1 s, à partir de 1 600 clips par pli.
 |---|---|---|---|
 | reconstruction | 0.605 ± 0.022 | 0.095 | 0.520 |
 | embedding | 0.683 ± 0.018 | 0.119 | 0.578 |
-| combiné | 0.627 ± 0.023 | 0.111 | 0.585 |
+| combiné (max des z, navigateur) | 0.698 ± 0.019 | 0.104 | 0.632 |
+| somme des z | 0.627 ± 0.023 | 0.111 | 0.585 |
 
 Taille 1.41 Mo. Détails : `autoencoder.md`.
 
