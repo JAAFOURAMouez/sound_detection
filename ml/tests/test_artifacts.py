@@ -33,6 +33,14 @@ def test_published_models_run_and_match_labels():
     assert embedding.shape[0] == 2
 
 
+@pytest.mark.skipif(not published, reason="modèles pas encore exportés")
+def test_published_models_contain_no_debug_metadata():
+    for name in ONNX_FILES:
+        raw = (MODELS_DIR / name).read_bytes()
+        assert b"stack_trace" not in raw, name
+        assert b"/home/" not in raw, name
+
+
 @pytest.mark.skipif(not (REPORTS / "export.json").exists(), reason="pas de rapport d'export")
 def test_recorded_parity_within_tolerance():
     report = json.loads((REPORTS / "export.json").read_text())

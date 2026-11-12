@@ -24,8 +24,8 @@
       "id": "classifier",
       "file": "classifier.onnx",
       "role": "Classifieur maison ESC-50 (50 classes)",
-      "sizeBytes": 4580005,
-      "sha256": "4c97967c07060b71d72cd4f7bdc5ec601f4ef99a7d62d6baa91d65f526db9b43",
+      "sizeBytes": 4528656,
+      "sha256": "028c4e25ef16a43c75a94141f0a636d5f7e9dbb05bee5a4afb6a032a5a03ef42",
       "output": "logits et probs : float32 (batch, 50) ; étiquettes dans labels.json",
       "metrics": "ml/reports/classifier_cv.md",
       "config": {
@@ -67,14 +67,14 @@
       "input": "waveform : float32 (batch, 16000), mono 16 kHz, 1 s",
       "license": "Poids entraînés sur ESC-50 (CC BY-NC 3.0) : usage non commercial",
       "training": "ml/ (PyTorch), voir ml/reports",
-      "revision": "6a68c96"
+      "revision": "8e1a2e9"
     },
     {
       "id": "autoencoder",
       "file": "autoencoder.onnx",
       "role": "Score d'anomalie générique (erreur de reconstruction) et embedding du goulot",
-      "sizeBytes": 1444421,
-      "sha256": "96732e9c1d43692a82935e0291748bfd3e39f15d5839e64b29c3aed57718f79a",
+      "sizeBytes": 1410996,
+      "sha256": "dd83844cd6f2b93b12e7bad0a9c038fe167aee1365e3255f3008416d1a9bbc7b",
       "output": "score : float32 (batch) ; embedding : float32 (batch, 32)",
       "metrics": "ml/reports/autoencoder.md",
       "config": {
@@ -124,7 +124,7 @@
       "input": "waveform : float32 (batch, 16000), mono 16 kHz, 1 s",
       "license": "Poids entraînés sur ESC-50 (CC BY-NC 3.0) : usage non commercial",
       "training": "ml/ (PyTorch), voir ml/reports",
-      "revision": "6a68c96"
+      "revision": "8e1a2e9"
     }
   ]
 }

@@ -1,13 +1,13 @@
 {
-  "git": "6a68c96",
+  "git": "8e1a2e9",
   "opset": 18,
   "parity_inputs": "ESC-50 (16 fenêtres réelles)",
   "tolerance": 0.001,
   "models": {
     "classifier": {
       "file": "classifier.onnx",
-      "bytes": 4580005,
-      "sha256": "4c97967c07060b71d72cd4f7bdc5ec601f4ef99a7d62d6baa91d65f526db9b43",
+      "bytes": 4528656,
+      "sha256": "028c4e25ef16a43c75a94141f0a636d5f7e9dbb05bee5a4afb6a032a5a03ef42",
       "max_abs_diff": {
         "logits": 3.814697265625e-06,
         "probs": 2.980232238769531e-07
@@ -16,8 +16,8 @@
     },
     "autoencoder": {
       "file": "autoencoder.onnx",
-      "bytes": 1444421,
-      "sha256": "96732e9c1d43692a82935e0291748bfd3e39f15d5839e64b29c3aed57718f79a",
+      "bytes": 1410996,
+      "sha256": "dd83844cd6f2b93b12e7bad0a9c038fe167aee1365e3255f3008416d1a9bbc7b",
       "max_abs_diff": {
         "score": 9.313225746154785e-09,
         "embedding": 1.7881393432617188e-07
@@ -25,6 +25,6 @@
       "parity_ok": true
     }
   },
-  "total_bytes": 6024426,
+  "total_bytes": 5939652,
   "within_budget": true
 }

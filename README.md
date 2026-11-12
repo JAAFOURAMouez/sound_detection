@@ -55,7 +55,7 @@ La configuration d'exemple se trouve dans `.env.example`.
 
 | Modèle | Exactitude (clip) | F1 macro | Exactitude (fenêtre 1 s) | Taille |
 |---|---|---|---|---|
-| CNN maison (850 k paramètres, log-mel dans le graphe ONNX) | 82,8 ± 1,6 % | 81,8 ± 1,6 % | 69,4 ± 2,0 % | 4,6 Mo |
+| CNN maison (850 k paramètres, log-mel dans le graphe ONNX) | 82,8 ± 1,6 % | 81,8 ± 1,6 % | 69,4 ± 2,0 % | 4,5 Mo |
 | YAMNet + régression logistique (référence) | 81,2 ± 1,9 % | 81,3 ± 1,9 % | — | 4,1 Mo |
 
 Détection d'anomalies (autoencodeur, 1,4 Mo) : 8 classes jamais vues à l'entraînement contre

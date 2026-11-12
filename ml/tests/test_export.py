@@ -1,5 +1,7 @@
 """Chaîne d'export ONNX sur des modèles non entraînés (rapide, sans données ni GPU)."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 import torch
@@ -54,3 +56,13 @@ def test_parity_inputs_shape():
     waves, source = parity_inputs(n=4)
     assert waves.shape == (4, 16_000)
     assert source
+
+
+def test_exported_file_has_no_local_paths(tmp_path):
+    module = ClassifierExport(_with_stats(SoundClassifier()))
+    path = tmp_path / "c.onnx"
+    export(module, path, ["logits", "probs"])
+    raw = path.read_bytes()
+    assert b"stack_trace" not in raw
+    assert b'File "/' not in raw
+    assert str(Path.home()).encode() not in raw

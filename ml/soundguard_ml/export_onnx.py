@@ -29,6 +29,28 @@ SIZE_BUDGET_BYTES = 15 * 1024 * 1024
 PARITY_TOLERANCE = 1e-3
 
 
+def strip_debug_metadata(path: Path) -> None:
+    """Retire les métadonnées de débogage (piles d'appels avec chemins locaux, noms FX) du fichier."""
+    model = onnx.load(str(path))
+
+    def clean(graph: onnx.GraphProto) -> None:
+        graph.doc_string = ""
+        for node in graph.node:
+            del node.metadata_props[:]
+            node.doc_string = ""
+            for attr in node.attribute:
+                if attr.type == onnx.AttributeProto.GRAPH:
+                    clean(attr.g)
+        for value in [*graph.input, *graph.output, *graph.value_info]:
+            del value.metadata_props[:]
+        for init in graph.initializer:
+            del init.metadata_props[:]
+
+    clean(model.graph)
+    del model.metadata_props[:]
+    onnx.save(model, str(path))
+
+
 def export(module: nn.Module, path: Path, output_names: list[str], dynamic_batch: bool = True) -> None:
     """Exporte `module` (entrée : forme d'onde (B, 16000)) en un seul fichier ONNX."""
     module = module.eval().cpu()
@@ -48,6 +70,7 @@ def export(module: nn.Module, path: Path, output_names: list[str], dynamic_batch
     )
     program.optimize()
     program.save(str(path), external_data=False)
+    strip_debug_metadata(path)
     onnx.checker.check_model(str(path), full_check=True)
 
 
