@@ -7,6 +7,11 @@ import { appStore } from './state/appStore';
 // Point d'observation réservé au build de test de bout en bout (absent du build normal).
 if (import.meta.env.VITE_E2E === '1') {
   (window as unknown as { __soundguard: typeof appStore }).__soundguard = appStore;
+  void import('./lab/simulate').then(({ simulate }) => {
+    (window as unknown as { __soundguardLab: { simulate: typeof simulate } }).__soundguardLab = {
+      simulate,
+    };
+  });
 }
 
 const root = document.getElementById('root');

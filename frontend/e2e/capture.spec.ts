@@ -29,7 +29,8 @@ test.describe('micro autorisé', () => {
 
   test('capture à 16 kHz dans le tampon circulaire', async ({ page }) => {
     await startListening(page);
-    await expect(page.getByText(fr.status.monitoring, { exact: true })).toBeVisible();
+    // L'écoute commence par la calibration de l'ambiance.
+    await expect(page.getByText(fr.status.calibrating, { exact: true })).toBeVisible();
 
     const start = await probe(page);
     const t0 = Date.now();
@@ -41,7 +42,7 @@ test.describe('micro autorisé', () => {
     console.log(
       `fréquence native ${String(end.inputSampleRate)} Hz → ${rate.toFixed(0)} échantillons/s`,
     );
-    expect(end.status).toBe('monitoring');
+    expect(['calibrating', 'monitoring']).toContain(end.status);
     // Blocs de 100 ms : on tolère ±10 % sur une mesure de 3 s.
     expect(rate).toBeGreaterThan(16_000 * 0.9);
     expect(rate).toBeLessThan(16_000 * 1.1);

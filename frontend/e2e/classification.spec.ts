@@ -54,10 +54,17 @@ function analyse(sample: DemoSample, run: Awaited<ReturnType<typeof play>>) {
   const onsetAt = run.startedAt + sample.onsetSeconds * 1_000;
   const during = run.observations.filter((o) => o.receivedAt >= onsetAt);
   const first = during.find((o) => o.family === sample.expectedFamily);
-  // Famille de l'événement : la plus forte hors ambiance (le silence qui suit n'est pas l'événement).
-  const strongest = during
-    .filter((o) => o.family !== null && o.family !== 'ambient')
-    .sort((a, b) => b.score - a.score)[0];
+  // Famille de l'événement : la plus fréquente parmi les fenêtres qui le contiennent, hors
+  // ambiance et hors « aucune » (le silence qui suit n'est pas l'événement) ; à égalité, la plus forte.
+  const votes = new Map<string, { count: number; best: number }>();
+  for (const o of during) {
+    if (o.family === null || o.family === 'ambient') continue;
+    const v = votes.get(o.family) ?? { count: 0, best: 0 };
+    votes.set(o.family, { count: v.count + 1, best: Math.max(v.best, o.score) });
+  }
+  const [family, vote] =
+    [...votes.entries()].sort((a, b) => b[1].count - a[1].count || b[1].best - a[1].best)[0] ?? [];
+  const strongest = family && vote ? { family, score: vote.best } : undefined;
   return {
     latencyMs: first ? first.receivedAt - onsetAt : Number.POSITIVE_INFINITY,
     strongestFamily: strongest?.family ?? null,
