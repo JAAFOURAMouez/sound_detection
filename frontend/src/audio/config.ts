@@ -10,6 +10,9 @@ export const RING_BUFFER_SECONDS = 10;
 export const ANALYSIS_WINDOW_SECONDS = 1;
 export const ANALYSIS_HOP_SECONDS = 0.5;
 
+/** Nom d'enregistrement du processeur AudioWorklet. */
+export const CAPTURE_PROCESSOR_NAME = 'soundguard-capture';
+
 /** Taille des blocs envoyés par le worklet : 100 ms à 16 kHz. */
 export const WORKLET_CHUNK_SAMPLES = 1_600;
 
