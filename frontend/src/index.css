@@ -1,11 +1,69 @@
 @import 'tailwindcss';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-600.css';
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import './ui/tokens.css';
 
-/* Les jetons de design (src/ui/tokens.css) arrivent en phase 1. */
+/* Expose les jetons aux utilitaires Tailwind (bg-bg, text-phosphor, font-data…). */
+@theme inline {
+  --color-bg: var(--sg-bg);
+  --color-surface: var(--sg-surface);
+  --color-surface-raised: var(--sg-surface-raised);
+  --color-grid: var(--sg-grid);
+  --color-grid-strong: var(--sg-grid-strong);
+  --color-text: var(--sg-text);
+  --color-text-dim: var(--sg-text-dim);
+  --color-text-faint: var(--sg-text-faint);
+  --color-phosphor: var(--sg-phosphor);
+  --color-phosphor-dim: var(--sg-phosphor-dim);
+  --color-severity-0: var(--sg-severity-0);
+  --color-severity-1: var(--sg-severity-1);
+  --color-severity-2: var(--sg-severity-2);
+  --color-severity-3: var(--sg-severity-3);
+  --font-data: var(--sg-font-data);
+  --font-text: var(--sg-font-text);
+  --radius-sg: var(--sg-radius-1);
+}
+
 :root {
   color-scheme: dark;
 }
 
+html,
 body {
   margin: 0;
+  min-height: 100%;
+  background: var(--sg-bg);
+  color: var(--sg-text);
+  font-family: var(--sg-font-text);
+  font-size: var(--sg-text-base);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
   min-height: 100vh;
+}
+
+:focus-visible {
+  outline: var(--sg-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Étiquettes d'instrument : petites capitales espacées */
+.sg-label {
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-xs);
+  letter-spacing: var(--sg-tracking-caps);
+  text-transform: uppercase;
+  color: var(--sg-text-dim);
+}
+
+.sg-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

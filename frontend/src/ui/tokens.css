@@ -1,0 +1,68 @@
+/*
+ * Jetons de design SoundGuard — « poste d'écoute ».
+ * Définis ici avant tout composant (voir docs/DESIGN.md).
+ * Règle : l'ambre et le rouge sont réservés à la gravité, jamais à la décoration.
+ */
+:root {
+  /* Surfaces : presque noir, légèrement bleuté */
+  --sg-bg: #06090d;
+  --sg-surface: #0a1016;
+  --sg-surface-raised: #0f1720;
+  --sg-grid: #16222d;
+  --sg-grid-strong: #23364a;
+
+  /* Texte */
+  --sg-text: #d6e0e8;
+  --sg-text-dim: #8b9cab;
+  --sg-text-faint: #5d6f7f;
+
+  /* Accent unique « phosphore » */
+  --sg-phosphor: #4ff0a8;
+  --sg-phosphor-dim: #2a8a61;
+  --sg-phosphor-glow: rgb(79 240 168 / 0.18);
+
+  /* Gravité (0 à 3) — usage réservé */
+  --sg-severity-0: #8b9cab;
+  --sg-severity-1: #4ff0a8;
+  --sg-severity-2: #ffb547;
+  --sg-severity-3: #ff5b4f;
+
+  /* Espacements (base 4 px) */
+  --sg-space-1: 0.25rem;
+  --sg-space-2: 0.5rem;
+  --sg-space-3: 0.75rem;
+  --sg-space-4: 1rem;
+  --sg-space-6: 1.5rem;
+  --sg-space-8: 2rem;
+
+  /* Rayons : un instrument a des angles francs */
+  --sg-radius-0: 0;
+  --sg-radius-1: 2px;
+
+  /* Traits */
+  --sg-stroke: 1px;
+  --sg-focus-ring: 2px solid var(--sg-phosphor);
+
+  /* Durées */
+  --sg-duration-fast: 120ms;
+  --sg-duration-base: 240ms;
+  --sg-duration-slow: 600ms;
+  --sg-sweep-period: 4s;
+
+  /* Typographie */
+  --sg-font-data: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --sg-font-text: 'IBM Plex Sans', system-ui, sans-serif;
+  --sg-text-xs: 0.6875rem;
+  --sg-text-sm: 0.8125rem;
+  --sg-text-base: 0.9375rem;
+  --sg-text-lg: 1.25rem;
+  --sg-tracking-caps: 0.12em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sg-duration-fast: 0ms;
+    --sg-duration-base: 0ms;
+    --sg-duration-slow: 0ms;
+  }
+}
