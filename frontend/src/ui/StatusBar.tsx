@@ -6,13 +6,23 @@ import { StatusGlyph } from './StatusGlyph';
 
 interface StatusBarProps {
   status: AppStatus;
+  demo: boolean;
+  model: ReactNode;
   level: ReactNode;
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
 }
 
-export function StatusBar({ status, level, onPause, onResume, onStop }: StatusBarProps) {
+export function StatusBar({
+  status,
+  demo,
+  model,
+  level,
+  onPause,
+  onResume,
+  onStop,
+}: StatusBarProps) {
   const paused = status === 'paused';
   return (
     <header className="sg-statusbar">
@@ -24,9 +34,10 @@ export function StatusBar({ status, level, onPause, onResume, onStop }: StatusBa
             {t.status.label} : <strong>{t.status[status]}</strong>
           </span>
         </span>
+        {model}
       </p>
       <div className="sg-statusbar__level">{level}</div>
-      <MicIndicator paused={paused} />
+      <MicIndicator paused={paused} demo={demo} />
       <div className="sg-statusbar__actions">
         <button
           type="button"

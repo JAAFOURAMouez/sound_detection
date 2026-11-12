@@ -1,7 +1,17 @@
 import { t } from '../i18n';
 
-/** Indicateur toujours visible tant que le micro est ouvert. */
-export function MicIndicator({ paused }: { paused: boolean }) {
+/** Indicateur toujours visible tant que le micro est ouvert (ou rappel du mode démo). */
+export function MicIndicator({ paused, demo = false }: { paused: boolean; demo?: boolean }) {
+  if (demo) {
+    return (
+      <p className="sg-mic sg-mic--demo" role="status">
+        <svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true">
+          <path d="M2 1.5v11l9-5.5Z" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        </svg>
+        <span>{t.main.demoMode}</span>
+      </p>
+    );
+  }
   return (
     <p className={`sg-mic ${paused ? 'sg-mic--paused' : 'sg-mic--live'}`} role="status">
       <svg width="12" height="14" viewBox="0 0 12 14" aria-hidden="true">

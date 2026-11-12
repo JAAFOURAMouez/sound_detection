@@ -5,7 +5,18 @@ import { MainScreen } from './MainScreen';
 
 function renderMain(status: 'monitoring' | 'paused') {
   const handlers = { onPause: vi.fn(), onResume: vi.fn(), onStop: vi.fn() };
-  render(<MainScreen status={status} level={null} spectrogram={null} {...handlers} />);
+  render(
+    <MainScreen
+      status={status}
+      demo={false}
+      model={null}
+      level={null}
+      spectrogram={null}
+      live={null}
+      demoPicker={null}
+      {...handlers}
+    />,
+  );
   return handlers;
 }
 

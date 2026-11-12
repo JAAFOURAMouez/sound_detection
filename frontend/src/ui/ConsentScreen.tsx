@@ -5,9 +5,10 @@ interface ConsentScreenProps {
   pending: boolean;
   errorKind: CaptureErrorKind | null;
   onAccept: () => void;
+  onDemo: () => void;
 }
 
-export function ConsentScreen({ pending, errorKind, onAccept }: ConsentScreenProps) {
+export function ConsentScreen({ pending, errorKind, onAccept, onDemo }: ConsentScreenProps) {
   const error = errorKind ? t.captureError[errorKind] : null;
 
   return (
@@ -47,6 +48,12 @@ export function ConsentScreen({ pending, errorKind, onAccept }: ConsentScreenPro
         >
           {error ? t.consent.retry : t.consent.accept}
         </button>
+        <div className="sg-consent__alt">
+          <button type="button" className="sg-button" onClick={onDemo} disabled={pending}>
+            {t.consent.demo}
+          </button>
+          <p className="sg-consent__hint">{t.consent.demoHint}</p>
+        </div>
         {pending && (
           <p id="consent-pending" className="sg-label" role="status">
             {t.consent.pending}

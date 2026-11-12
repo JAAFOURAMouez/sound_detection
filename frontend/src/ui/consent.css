@@ -106,3 +106,14 @@
   background: var(--sg-phosphor);
   color: var(--sg-bg);
 }
+
+.sg-consent__alt {
+  display: grid;
+  gap: var(--sg-space-1);
+  justify-items: start;
+}
+
+.sg-consent__hint {
+  font-size: var(--sg-text-sm);
+  color: var(--sg-text-dim);
+}

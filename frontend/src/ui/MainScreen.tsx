@@ -7,8 +7,12 @@ import { TransmissionLine } from './TransmissionLine';
 
 interface MainScreenProps {
   status: AppStatus;
+  demo: boolean;
+  model: ReactNode;
   level: ReactNode;
   spectrogram: ReactNode;
+  live: ReactNode;
+  demoPicker: ReactNode;
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
@@ -16,8 +20,12 @@ interface MainScreenProps {
 
 export function MainScreen({
   status,
+  demo,
+  model,
   level,
   spectrogram,
+  live,
+  demoPicker,
   onPause,
   onResume,
   onStop,
@@ -26,6 +34,8 @@ export function MainScreen({
     <div className="sg-main" data-status={status}>
       <StatusBar
         status={status}
+        demo={demo}
+        model={model}
         level={level}
         onPause={onPause}
         onResume={onResume}
@@ -33,7 +43,11 @@ export function MainScreen({
       />
       <main className="sg-main__body">
         <Radar sweeping={status === 'monitoring'} />
-        <Journal />
+        <div className="sg-side">
+          {demoPicker}
+          {live}
+          <Journal />
+        </div>
       </main>
       <div className="sg-main__spectrogram">{spectrogram}</div>
       <TransmissionLine />
