@@ -9,3 +9,4 @@ playwright-report
 test-results
 scripts/*.md
 public/vendor
+src/inference/__fixtures__
