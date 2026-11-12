@@ -205,3 +205,35 @@ export class Calibrator {
     return fitBaseline(this.samples, options);
   }
 }
+
+/**
+ * Seuil avec mémoire : une alerte naît quand le score lissé franchit le seuil vers le haut,
+ * au plus une fois par période réfractaire.
+ */
+export class ThresholdGate {
+  private above = false;
+  private lastAlert = Number.NEGATIVE_INFINITY;
+
+  constructor(
+    readonly threshold = 0.5,
+    readonly refractorySeconds = 2,
+  ) {}
+
+  /** Renvoie vrai si cette observation déclenche une alerte. */
+  update(score: number, t: number): boolean {
+    const isAbove = score >= this.threshold;
+    const alert = isAbove && !this.above && t - this.lastAlert >= this.refractorySeconds;
+    this.above = isAbove;
+    if (alert) this.lastAlert = t;
+    return alert;
+  }
+
+  get isAbove(): boolean {
+    return this.above;
+  }
+
+  reset(): void {
+    this.above = false;
+    this.lastAlert = Number.NEGATIVE_INFINITY;
+  }
+}

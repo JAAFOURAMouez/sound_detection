@@ -9,6 +9,7 @@ import {
   normalizeZ,
   ScoreSmoother,
   scoreSample,
+  ThresholdGate,
 } from './calibration';
 
 /** Générateur pseudo-aléatoire déterministe (mulberry32) et gaussienne (Box-Muller). */
@@ -137,5 +138,15 @@ describe('Calibrator', () => {
     });
     expect(c.complete).toBe(true);
     expect(c.baseline().windows).toBe(40);
+  });
+});
+
+describe('ThresholdGate', () => {
+  it('déclenche au franchissement montant seulement, avec période réfractaire', () => {
+    const gate = new ThresholdGate(0.5, 2);
+    const scores = [0.2, 0.6, 0.7, 0.4, 0.6, 0.3, 0.3, 0.3, 0.3, 0.8];
+    const alerts = scores.map((s, i) => gate.update(s, i * 0.5));
+    // 0,5 s : alerte ; 2 s : remontée trop proche (1,5 s après) ; 4,5 s : nouvelle alerte.
+    expect(alerts).toEqual([false, true, false, false, false, false, false, false, false, true]);
   });
 });
