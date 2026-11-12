@@ -98,11 +98,11 @@ def train(
 
 
 @torch.no_grad()
-def score_clips(model: ConvAutoencoder, cfg: dict[str, Any], dataset: esc.Esc50, rows: np.ndarray):
-    """Scores par clip (max des fenêtres sonores) et par fenêtre."""
+def window_outputs(model: ConvAutoencoder, cfg: dict[str, Any], dataset: esc.Esc50, rows: np.ndarray):
+    """Pour chaque fenêtre sonore de 1 s : erreur de reconstruction, embedding, clip d'origine."""
     dev = next(model.parameters()).device
     window = window_samples(cfg)
-    clip_scores, window_scores, window_rows = [], [], []
+    scores, embeddings, window_rows = [], [], []
     for r in rows:
         windows = sliding_windows(
             np.asarray(dataset.waveforms[r]),
@@ -110,11 +110,32 @@ def score_clips(model: ConvAutoencoder, cfg: dict[str, Any], dataset: esc.Esc50,
             cfg["eval"]["window_hop"],
             cfg["data"]["energy_floor_db"],
         )
-        scores = model(torch.as_tensor(windows, device=dev))[0].cpu().numpy()
-        clip_scores.append(float(scores.max()))
-        window_scores.extend(scores.tolist())
-        window_rows.extend([r] * len(scores))
-    return np.array(clip_scores), np.array(window_scores), np.array(window_rows)
+        score, embedding = model(torch.as_tensor(windows, device=dev))
+        scores.append(score.cpu().numpy())
+        embeddings.append(embedding.cpu().numpy())
+        window_rows.extend([r] * len(windows))
+    return np.concatenate(scores), np.concatenate(embeddings), np.array(window_rows)
+
+
+def fit_diagonal_gaussian(embeddings: np.ndarray, eps: float = 1e-3) -> tuple[np.ndarray, np.ndarray]:
+    """Ligne de base des embeddings : moyenne et variance (covariance diagonale régularisée)."""
+    return embeddings.mean(axis=0), embeddings.var(axis=0) + eps
+
+
+def embedding_distance(embeddings: np.ndarray, mean: np.ndarray, var: np.ndarray) -> np.ndarray:
+    """Distance de Mahalanobis (diagonale) au carré, moyennée par dimension."""
+    return np.mean((embeddings - mean) ** 2 / var, axis=1)
+
+
+def robust_z(values: np.ndarray, reference: np.ndarray) -> np.ndarray:
+    """(x − médiane) / MAD de la référence : même normalisation que la calibration du navigateur."""
+    median = np.median(reference)
+    mad = np.median(np.abs(reference - median)) + 1e-9
+    return (values - median) / mad
+
+
+def clip_max(window_scores: np.ndarray, window_rows: np.ndarray, rows: np.ndarray) -> np.ndarray:
+    return np.array([window_scores[window_rows == r].max() for r in rows])
 
 
 def main() -> None:
@@ -124,6 +145,7 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--skip-final", action="store_true")
     parser.add_argument("--skip-cv", action="store_true")
+    parser.add_argument("--report-name", default="autoencoder", help="nom des fichiers de rapport")
     args = parser.parse_args()
 
     cfg = load_config(args.config)
@@ -138,38 +160,62 @@ def main() -> None:
 
     if not args.skip_cv:
         per_fold = []
-        all_scores, all_rows = [], []
+        all_scores, all_dist, all_comb, all_rows = [], [], [], []
         for test_fold in args.folds:
             train_folds = {f for f in range(1, 6) if f != test_fold}
             train_rows = np.array([r for r in dataset.indices(train_folds) if not is_anomaly[r]])
             model = train(cfg, dataset, train_rows, epochs, f"[pli {test_fold}]")
             test_rows = dataset.indices({test_fold})
-            clip_scores, window_scores, window_rows = score_clips(model, cfg, dataset, test_rows)
+            train_rec, train_emb, _ = window_outputs(model, cfg, dataset, train_rows)
+            mean, var = fit_diagonal_gaussian(train_emb)
+            train_dist = embedding_distance(train_emb, mean, var)
+            rec, emb, window_rows = window_outputs(model, cfg, dataset, test_rows)
+            dist = embedding_distance(emb, mean, var)
+            combined = robust_z(rec, train_rec) + robust_z(dist, train_dist)
             labels = is_anomaly[test_rows].astype(int)
+            window_labels = is_anomaly[window_rows].astype(int)
+            clip_scores = clip_max(rec, window_rows, test_rows)
+            clip_dist = clip_max(dist, window_rows, test_rows)
+            clip_comb = clip_max(combined, window_rows, test_rows)
             result = {
                 "fold": test_fold,
                 "clip_auc": roc_auc(labels, clip_scores),
                 "clip_pauc": partial_auc(labels, clip_scores, max_fpr),
-                "window_auc": roc_auc(is_anomaly[window_rows].astype(int), window_scores),
+                "window_auc": roc_auc(window_labels, rec),
+                "emb_clip_auc": roc_auc(labels, clip_dist),
+                "emb_clip_pauc": partial_auc(labels, clip_dist, max_fpr),
+                "emb_window_auc": roc_auc(window_labels, dist),
+                "comb_clip_auc": roc_auc(labels, clip_comb),
+                "comb_clip_pauc": partial_auc(labels, clip_comb, max_fpr),
+                "comb_window_auc": roc_auc(window_labels, combined),
             }
             per_fold.append(result)
             all_scores.append(clip_scores)
+            all_dist.append(clip_dist)
+            all_comb.append(clip_comb)
             all_rows.append(test_rows)
             print(
-                f"[pli {test_fold}] AUC clip {result['clip_auc']:.3f} · pAUC {result['clip_pauc']:.3f}"
-                f" · AUC fenêtre {result['window_auc']:.3f}"
+                f"[pli {test_fold}] reconstruction : AUC clip {result['clip_auc']:.3f} · pAUC "
+                f"{result['clip_pauc']:.3f} · AUC fenêtre {result['window_auc']:.3f} | embedding : AUC clip "
+                f"{result['emb_clip_auc']:.3f} | combiné : AUC clip {result['comb_clip_auc']:.3f}"
             )
             CHECKPOINTS.mkdir(exist_ok=True)
             torch.save(model.state_dict(), CHECKPOINTS / f"autoencoder_fold{test_fold}.pt")
 
         scores = np.concatenate(all_scores)
+        dists = np.concatenate(all_dist)
+        combs = np.concatenate(all_comb)
         rows = np.concatenate(all_rows)
         normal = ~is_anomaly[rows]
-        per_class = {}
+        per_class: dict[str, dict[str, float]] = {}
         for name in cfg["anomaly_classes"]:
             this = dataset.targets[rows] == dataset.classes.index(name)
             keep = normal | this
-            per_class[name] = roc_auc(this[keep].astype(int), scores[keep])
+            per_class[name] = {
+                "reconstruction": roc_auc(this[keep].astype(int), scores[keep]),
+                "embedding": roc_auc(this[keep].astype(int), dists[keep]),
+                "combined": roc_auc(this[keep].astype(int), combs[keep]),
+            }
         keys = [k for k in per_fold[0] if k != "fold"]
         summary = {
             "config": cfg,
@@ -183,8 +229,8 @@ def main() -> None:
             "std": {k: float(np.std([f[k] for f in per_fold])) for k in keys},
             "per_class_auc": per_class,
         }
-        write_json(REPORTS / "autoencoder.json", summary)
-        write_autoencoder_report(summary, REPORTS)
+        write_json(REPORTS / f"{args.report_name}.json", summary)
+        write_autoencoder_report(summary, REPORTS, args.report_name)
         print(f"Moyenne : {summary['mean']}")
 
     if not args.skip_final:

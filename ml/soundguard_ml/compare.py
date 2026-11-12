@@ -50,10 +50,15 @@ def main() -> None:
         lines += [
             "## Autoencodeur d'anomalies",
             "",
-            f"AUC-ROC (clip) {ae['mean']['clip_auc']:.3f} ± {ae['std']['clip_auc']:.3f} · "
-            f"pAUC 0,1 {ae['mean']['clip_pauc']:.3f} ± {ae['std']['clip_pauc']:.3f} · "
-            f"AUC-ROC (fenêtre) {ae['mean']['window_auc']:.3f} ± {ae['std']['window_auc']:.3f} · "
-            f"taille {size('autoencoder')}. Détails : `autoencoder.md`.",
+            "| Score | AUC-ROC (clip) | pAUC 0,1 (clip) | AUC-ROC (fenêtre 1 s) |",
+            "|---|---|---|---|",
+            *[
+                f"| {label} | {ae['mean'][p + 'clip_auc']:.3f} ± {ae['std'][p + 'clip_auc']:.3f} "
+                f"| {ae['mean'][p + 'clip_pauc']:.3f} | {ae['mean'][p + 'window_auc']:.3f} |"
+                for label, p in [("reconstruction", ""), ("embedding", "emb_"), ("combiné", "comb_")]
+            ],
+            "",
+            f"Taille {size('autoencoder')}. Détails : `autoencoder.md`.",
             "",
         ]
     if export:
