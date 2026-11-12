@@ -14,6 +14,8 @@ import { DEMO_AMBIENCE, DEMO_SAMPLES } from '../demo/samples';
 import { ClassifierClient, type Received } from '../inference/classifierClient';
 import { CALIBRATION_SECONDS, type ClassifierKind } from '../inference/config';
 import type { LoadInfo } from '../inference/messages';
+import { CLIP_SAMPLES, type EventRecorder } from '../events/recorder';
+import { recorder as sharedRecorder, setClipSource } from './services';
 
 export type AppStatus = 'idle' | 'consent' | 'calibrating' | 'monitoring' | 'paused' | 'error';
 export type ModelStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -54,6 +56,10 @@ export interface AppDeps {
   createClient: () => ClassifierClient;
   baseUrl: () => string;
   calibrationSeconds: number;
+  recorder: Pick<
+    EventRecorder,
+    'startSession' | 'endSession' | 'onResult' | 'onAnomaly' | 'onDrift'
+  >;
 }
 
 const defaultDeps: AppDeps = {
@@ -62,6 +68,7 @@ const defaultDeps: AppDeps = {
   createClient: () => new ClassifierClient(),
   baseUrl: () => new URL(import.meta.env.BASE_URL, window.location.href).toString(),
   calibrationSeconds: CALIBRATION_SECONDS,
+  recorder: sharedRecorder,
 };
 
 function isDemo(session: CaptureSession | null): session is DemoSession {
@@ -102,6 +109,7 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
       );
       created.on('result', (live) => {
         set({ live });
+        deps.recorder.onResult(live);
       });
       created.on('calibration', ({ progress, done }) => {
         set({ calibration: { progress, done } });
@@ -110,9 +118,11 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
       });
       created.on('anomaly', (anomaly) => {
         set((state) => ({ anomaly, alerts: state.alerts + (anomaly.alert ? 1 : 0) }));
+        deps.recorder.onAnomaly(anomaly);
       });
       created.on('drift', (drift) => {
         set({ drift });
+        deps.recorder.onDrift(drift);
       });
       return created;
     };
@@ -138,6 +148,8 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
         }),
       ];
       set({ source, session, lastSample: null });
+      setClipSource(() => (session.ring.length > 0 ? session.ring.latest(CLIP_SAMPLES) : null));
+      deps.recorder.startSession(source, get().classifier.kind);
       calibrate();
     };
 
@@ -236,6 +248,8 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
       async stop() {
         const { session } = get();
         detach();
+        deps.recorder.endSession();
+        setClipSource(null);
         client?.reset();
         set({
           status: 'idle',

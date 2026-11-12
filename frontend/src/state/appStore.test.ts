@@ -66,8 +66,19 @@ const anomaly = (score: number, alert = false) => ({
   alert,
 });
 
-function makeStore(overrides: Partial<AppDeps> = {}, c = fakeClient()) {
+function fakeRecorder() {
+  return {
+    startSession: vi.fn(() => 'session'),
+    endSession: vi.fn(),
+    onResult: vi.fn(),
+    onAnomaly: vi.fn(),
+    onDrift: vi.fn(),
+  };
+}
+
+function makeStore(overrides: Partial<AppDeps> = {}, c = fakeClient(), recorder = fakeRecorder()) {
   const store = createAppStore({
+    recorder,
     createClient: () => c.client,
     baseUrl: () => 'http://localhost/',
     startCapture: () => Promise.resolve(fakeSession('mic').session),
@@ -75,7 +86,7 @@ function makeStore(overrides: Partial<AppDeps> = {}, c = fakeClient()) {
     calibrationSeconds: 30,
     ...overrides,
   });
-  return { store, client: c };
+  return { store, client: c, recorder };
 }
 
 describe('appStore', () => {
@@ -230,5 +241,34 @@ describe('appStore', () => {
     client.spies.push.mockClear();
     mic.emitChunk(new Float32Array(4));
     expect(client.spies.push).not.toHaveBeenCalled();
+  });
+});
+
+describe('appStore et historique', () => {
+  it('ouvre une session d’événements, lui transmet le flux et la ferme à l’arrêt', async () => {
+    const { store, client, recorder } = makeStore();
+    await store.getState().requestDemo();
+    expect(recorder.startSession).toHaveBeenCalledWith('demo', 'yamnet');
+    client.emit('anomaly', anomaly(0.7, true));
+    client.emit('result', {
+      model: 'yamnet',
+      top: [],
+      families: [],
+      dominant: null,
+      windowEndSample: 1,
+      inferenceMs: 2,
+    });
+    client.emit('drift', {
+      windowEndSample: 1,
+      divergence: 0,
+      levelDeltaDb: 0,
+      drifting: false,
+      sustained: false,
+    });
+    expect(recorder.onAnomaly).toHaveBeenCalled();
+    expect(recorder.onResult).toHaveBeenCalled();
+    expect(recorder.onDrift).toHaveBeenCalled();
+    await store.getState().stop();
+    expect(recorder.endSession).toHaveBeenCalled();
   });
 });
