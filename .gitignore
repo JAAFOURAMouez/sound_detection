@@ -18,3 +18,4 @@ ml/checkpoints/
 playwright-report/
 test-results/
 dist-e2e/
+frontend/public/vendor/

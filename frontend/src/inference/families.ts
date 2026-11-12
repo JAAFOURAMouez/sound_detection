@@ -73,15 +73,26 @@ export interface Classification {
   dominant: FamilyScore | null;
 }
 
+export interface ClassifyOptions {
+  topK?: number;
+  /** En dessous, aucune famille n'est désignée. */
+  minFamilyScore?: number;
+  /** Au-dessus, une famille est « confiante » : on retient alors la plus grave. */
+  confidentScore?: number;
+}
+
 /**
  * Agrège des scores de classes (sorties sigmoïdes indépendantes de YAMNet) en familles.
  * Score de famille = « ou » probabiliste : 1 − Π(1 − sᵢ), borné dans [0, 1] et croissant
  * quand plusieurs classes voisines s'allument (verre + éclatement + bris…).
+ *
+ * Famille dominante, par prudence : parmi les familles confiantes, la plus grave
+ * (à gravité égale, la plus probable) ; sinon la plus probable au-dessus du seuil minimal.
  */
 export function classify(
   scores: readonly ClassScore[],
   table: FamilyTable,
-  { topK = 3, minFamilyScore = 0.15 }: { topK?: number; minFamilyScore?: number } = {},
+  { topK = 3, minFamilyScore = 0.15, confidentScore = 0.5 }: ClassifyOptions = {},
 ): Classification {
   const top = [...scores]
     .sort((a, b) => b.score - a.score)
@@ -100,6 +111,10 @@ export function classify(
     .map(([family, c]) => ({ family, score: 1 - c, severity: table.severityOf(family) }))
     .sort((a, b) => b.score - a.score || b.severity - a.severity);
 
+  const confident = families
+    .filter((f) => f.score >= confidentScore)
+    .sort((a, b) => b.severity - a.severity || b.score - a.score);
   const best = families[0];
-  return { top, families, dominant: best && best.score >= minFamilyScore ? best : null };
+  const dominant = confident[0] ?? (best && best.score >= minFamilyScore ? best : null);
+  return { top, families, dominant };
 }

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "model": "yamnet",
-  "description": "Regroupement des classes AudioSet de YAMNet en familles d'événements, avec une gravité de 0 (information) à 3 (danger potentiel). Les classes absentes appartiennent à la famille « other ».",
+  "description": "Regroupement des classes AudioSet de YAMNet en familles d'événements, avec une gravité de 0 (information) à 3 (danger potentiel). Les classes absentes appartiennent à la famille « other ». Choix assumés : « Door », « Knock » et « Tap » sont des chocs ; « Fire alarm » rejoint « smoke_fire ».",
   "families": {
     "smoke_fire": {
       "severity": 3
@@ -24,7 +24,7 @@
     "mechanical": {
       "severity": 1
     },
-    "door_phone": {
+    "bell_phone": {
       "severity": 1
     },
     "water": {
@@ -1052,15 +1052,15 @@
       "name": "Engine knocking"
     },
     "348": {
-      "family": "door_phone",
+      "family": "impact",
       "name": "Door"
     },
     "349": {
-      "family": "door_phone",
+      "family": "bell_phone",
       "name": "Doorbell"
     },
     "350": {
-      "family": "door_phone",
+      "family": "bell_phone",
       "name": "Ding-dong"
     },
     "352": {
@@ -1068,8 +1068,12 @@
       "name": "Slam"
     },
     "353": {
-      "family": "door_phone",
+      "family": "impact",
       "name": "Knock"
+    },
+    "354": {
+      "family": "impact",
+      "name": "Tap"
     },
     "363": {
       "family": "mechanical",
@@ -1096,15 +1100,15 @@
       "name": "Alarm"
     },
     "383": {
-      "family": "door_phone",
+      "family": "bell_phone",
       "name": "Telephone"
     },
     "384": {
-      "family": "door_phone",
+      "family": "bell_phone",
       "name": "Telephone bell ringing"
     },
     "385": {
-      "family": "door_phone",
+      "family": "bell_phone",
       "name": "Ringtone"
     },
     "389": {

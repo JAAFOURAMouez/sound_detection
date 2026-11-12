@@ -28,6 +28,8 @@ describe('families.json', () => {
     expect(table.familyOf(byName('Siren'))).toBe('alarm');
     expect(table.familyOf(byName('Shatter'))).toBe('glass');
     expect(table.familyOf(byName('Slam'))).toBe('impact');
+    expect(table.familyOf(byName('Door'))).toBe('impact');
+    expect(table.familyOf(byName('Fire alarm'))).toBe('smoke_fire');
     expect(table.familyOf(byName('Screaming'))).toBe('voice_distress');
     expect(table.familyOf(byName('Mechanisms'))).toBe('mechanical');
     expect(table.severityOf('smoke_fire')).toBe(3);
@@ -103,6 +105,37 @@ describe('classify', () => {
     expect(result.families[0]?.score).toBeCloseTo(1 - 0.4 * 0.5);
     expect(result.dominant?.family).toBe('glass');
     expect(result.dominant?.severity).toBe(2);
+  });
+
+  it('privilégie la famille la plus grave parmi les familles confiantes', () => {
+    const graded = buildFamilyTable({
+      version: 1,
+      model: 'test',
+      families: { alarm: { severity: 2 }, smoke: { severity: 3 }, other: { severity: 0 } },
+      classes: {
+        '0': { family: 'alarm', name: 'Alarm' },
+        '1': { family: 'smoke', name: 'Fire alarm' },
+      },
+    });
+    const confident = classify(
+      [
+        { index: 0, name: 'Alarm', score: 0.99 },
+        { index: 1, name: 'Fire alarm', score: 0.9 },
+      ],
+      graded,
+    );
+    expect(confident.families[0]?.family).toBe('alarm');
+    expect(confident.dominant?.family).toBe('smoke');
+
+    // Une famille grave mais peu probable ne prend pas le dessus.
+    const unsure = classify(
+      [
+        { index: 0, name: 'Alarm', score: 0.99 },
+        { index: 1, name: 'Fire alarm', score: 0.3 },
+      ],
+      graded,
+    );
+    expect(unsure.dominant?.family).toBe('alarm');
   });
 
   it('ignore « other » et ne désigne pas de famille sous le seuil', () => {
