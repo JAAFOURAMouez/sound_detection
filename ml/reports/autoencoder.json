@@ -1,0 +1,185 @@
+{
+  "config": {
+    "seed": 42,
+    "data": {
+      "window_seconds": 1.0,
+      "crop_hop": 1600,
+      "energy_floor_db": -50,
+      "jitter": 4000
+    },
+    "anomaly_classes": [
+      "glass_breaking",
+      "siren",
+      "crying_baby",
+      "door_wood_knock",
+      "chainsaw",
+      "fireworks",
+      "car_horn",
+      "can_opening"
+    ],
+    "model": {
+      "channels": [
+        16,
+        32,
+        64
+      ],
+      "bottleneck": 32
+    },
+    "train": {
+      "epochs": 80,
+      "steps_per_epoch": 25,
+      "batch_size": 64,
+      "lr": 0.002,
+      "weight_decay": 0.0001,
+      "noise_prob": 0.3,
+      "snr_db": [
+        20,
+        40
+      ]
+    },
+    "eval": {
+      "window_hop": 8000,
+      "max_fpr": 0.1
+    }
+  },
+  "epochs": 80,
+  "git": "6a68c96",
+  "device": "cuda",
+  "parameters": 70793,
+  "anomaly_classes": [
+    "glass_breaking",
+    "siren",
+    "crying_baby",
+    "door_wood_knock",
+    "chainsaw",
+    "fireworks",
+    "car_horn",
+    "can_opening"
+  ],
+  "folds": [
+    {
+      "fold": 1,
+      "clip_auc": 0.6329985119047619,
+      "clip_pauc": 0.08035714285714286,
+      "window_auc": 0.5241961604424996,
+      "emb_clip_auc": 0.6701078869047619,
+      "emb_clip_pauc": 0.04557291666666668,
+      "emb_window_auc": 0.5454435122037063,
+      "comb_clip_auc": 0.6240234375,
+      "comb_clip_pauc": 0.07979910714285715,
+      "comb_window_auc": 0.555730777370444
+    },
+    {
+      "fold": 2,
+      "clip_auc": 0.6016090029761905,
+      "clip_pauc": 0.1268601190476191,
+      "window_auc": 0.5262076976843559,
+      "emb_clip_auc": 0.6655040922619048,
+      "emb_clip_pauc": 0.14369419642857142,
+      "emb_window_auc": 0.6010975468264952,
+      "comb_clip_auc": 0.6376488095238095,
+      "comb_clip_pauc": 0.1259300595238095,
+      "comb_window_auc": 0.5948443455892964
+    },
+    {
+      "fold": 3,
+      "clip_auc": 0.5661737351190477,
+      "clip_pauc": 0.11988467261904764,
+      "window_auc": 0.5062326510913819,
+      "emb_clip_auc": 0.672665550595238,
+      "emb_clip_pauc": 0.12007068452380958,
+      "emb_window_auc": 0.5913261125164785,
+      "comb_clip_auc": 0.5852399553571428,
+      "comb_clip_pauc": 0.16778273809523808,
+      "comb_window_auc": 0.5742930066691068
+    },
+    {
+      "fold": 4,
+      "clip_auc": 0.6117001488095238,
+      "clip_pauc": 0.05133928571428572,
+      "window_auc": 0.49791423375062993,
+      "emb_clip_auc": 0.7152622767857142,
+      "emb_clip_pauc": 0.15885416666666669,
+      "emb_window_auc": 0.5880240671402385,
+      "comb_clip_auc": 0.6402994791666667,
+      "comb_clip_pauc": 0.08165922619047619,
+      "comb_window_auc": 0.5863035519319594
+    },
+    {
+      "fold": 5,
+      "clip_auc": 0.6121186755952381,
+      "clip_pauc": 0.09700520833333331,
+      "window_auc": 0.5446746486205102,
+      "emb_clip_auc": 0.6895926339285714,
+      "emb_clip_pauc": 0.12453497023809525,
+      "emb_window_auc": 0.5665553655090354,
+      "comb_clip_auc": 0.6502511160714286,
+      "comb_clip_pauc": 0.09895833333333334,
+      "comb_window_auc": 0.6113333829106864
+    }
+  ],
+  "mean": {
+    "clip_auc": 0.6049200148809524,
+    "clip_pauc": 0.09508928571428574,
+    "window_auc": 0.5198450783178756,
+    "emb_clip_auc": 0.682626488095238,
+    "emb_clip_pauc": 0.11854538690476193,
+    "emb_window_auc": 0.5784893208391908,
+    "comb_clip_auc": 0.6274925595238094,
+    "comb_clip_pauc": 0.11082589285714287,
+    "comb_window_auc": 0.5845010128942987
+  },
+  "std": {
+    "clip_auc": 0.02190173473725817,
+    "clip_pauc": 0.027418848827391457,
+    "window_auc": 0.01638403198666727,
+    "emb_clip_auc": 0.018235865660500603,
+    "emb_clip_pauc": 0.03903957837974664,
+    "emb_window_auc": 0.020006355230674344,
+    "comb_clip_auc": 0.02272635416169246,
+    "comb_clip_pauc": 0.03294362735166419,
+    "comb_window_auc": 0.018773063693013306
+  },
+  "per_class_auc": {
+    "glass_breaking": {
+      "reconstruction": 0.5163244047619047,
+      "embedding": 0.8249702380952382,
+      "combined": 0.48400297619047616
+    },
+    "siren": {
+      "reconstruction": 0.7819196428571429,
+      "embedding": 0.6189880952380953,
+      "combined": 0.8017113095238095
+    },
+    "crying_baby": {
+      "reconstruction": 0.9148065476190476,
+      "embedding": 0.5486309523809524,
+      "combined": 0.8915773809523809
+    },
+    "door_wood_knock": {
+      "reconstruction": 0.4994940476190477,
+      "embedding": 0.8244047619047619,
+      "combined": 0.4636458333333333
+    },
+    "chainsaw": {
+      "reconstruction": 0.2779166666666667,
+      "embedding": 0.7733035714285715,
+      "combined": 0.6327232142857143
+    },
+    "fireworks": {
+      "reconstruction": 0.6205357142857143,
+      "embedding": 0.49854166666666666,
+      "combined": 0.5335416666666667
+    },
+    "car_horn": {
+      "reconstruction": 0.6364583333333333,
+      "embedding": 0.6167857142857143,
+      "combined": 0.6425595238095237
+    },
+    "can_opening": {
+      "reconstruction": 0.5915625,
+      "embedding": 0.7483630952380953,
+      "combined": 0.563764880952381
+    }
+  }
+}

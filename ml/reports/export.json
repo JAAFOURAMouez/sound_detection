@@ -1,0 +1,30 @@
+{
+  "git": "6a68c96",
+  "opset": 18,
+  "parity_inputs": "ESC-50 (16 fenêtres réelles)",
+  "tolerance": 0.001,
+  "models": {
+    "classifier": {
+      "file": "classifier.onnx",
+      "bytes": 4580005,
+      "sha256": "4c97967c07060b71d72cd4f7bdc5ec601f4ef99a7d62d6baa91d65f526db9b43",
+      "max_abs_diff": {
+        "logits": 3.814697265625e-06,
+        "probs": 2.980232238769531e-07
+      },
+      "parity_ok": true
+    },
+    "autoencoder": {
+      "file": "autoencoder.onnx",
+      "bytes": 1444421,
+      "sha256": "96732e9c1d43692a82935e0291748bfd3e39f15d5839e64b29c3aed57718f79a",
+      "max_abs_diff": {
+        "score": 9.313225746154785e-09,
+        "embedding": 1.7881393432617188e-07
+      },
+      "parity_ok": true
+    }
+  },
+  "total_bytes": 6024426,
+  "within_budget": true
+}

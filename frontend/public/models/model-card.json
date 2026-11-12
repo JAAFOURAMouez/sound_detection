@@ -19,6 +19,112 @@
         "Scores non calibrés : ce ne sont pas des probabilités.",
         "Pas un dispositif de sécurité certifié."
       ]
+    },
+    {
+      "id": "classifier",
+      "file": "classifier.onnx",
+      "role": "Classifieur maison ESC-50 (50 classes)",
+      "sizeBytes": 4580005,
+      "sha256": "4c97967c07060b71d72cd4f7bdc5ec601f4ef99a7d62d6baa91d65f526db9b43",
+      "output": "logits et probs : float32 (batch, 50) ; étiquettes dans labels.json",
+      "metrics": "ml/reports/classifier_cv.md",
+      "config": {
+        "seed": 42,
+        "data": {
+          "window_seconds": 1.0,
+          "crop_hop": 1600,
+          "energy_floor_db": -50,
+          "jitter": 4000
+        },
+        "model": {
+          "channels": [
+            32,
+            64,
+            128,
+            192
+          ],
+          "dropout": 0.3
+        },
+        "train": {
+          "epochs": 120,
+          "steps_per_epoch": 25,
+          "batch_size": 64,
+          "lr": 0.002,
+          "weight_decay": 0.02,
+          "mixup_alpha": 0.4,
+          "mixup_prob": 0.6,
+          "noise_prob": 0.5,
+          "snr_db": [
+            10,
+            40
+          ]
+        },
+        "eval": {
+          "window_hop": 8000
+        }
+      },
+      "format": "ONNX (opset 18), front-end log-mel inclus dans le graphe",
+      "input": "waveform : float32 (batch, 16000), mono 16 kHz, 1 s",
+      "license": "Poids entraînés sur ESC-50 (CC BY-NC 3.0) : usage non commercial",
+      "training": "ml/ (PyTorch), voir ml/reports",
+      "revision": "6a68c96"
+    },
+    {
+      "id": "autoencoder",
+      "file": "autoencoder.onnx",
+      "role": "Score d'anomalie générique (erreur de reconstruction) et embedding du goulot",
+      "sizeBytes": 1444421,
+      "sha256": "96732e9c1d43692a82935e0291748bfd3e39f15d5839e64b29c3aed57718f79a",
+      "output": "score : float32 (batch) ; embedding : float32 (batch, 32)",
+      "metrics": "ml/reports/autoencoder.md",
+      "config": {
+        "seed": 42,
+        "data": {
+          "window_seconds": 1.0,
+          "crop_hop": 1600,
+          "energy_floor_db": -50,
+          "jitter": 4000
+        },
+        "anomaly_classes": [
+          "glass_breaking",
+          "siren",
+          "crying_baby",
+          "door_wood_knock",
+          "chainsaw",
+          "fireworks",
+          "car_horn",
+          "can_opening"
+        ],
+        "model": {
+          "channels": [
+            16,
+            32,
+            64
+          ],
+          "bottleneck": 32
+        },
+        "train": {
+          "epochs": 80,
+          "steps_per_epoch": 25,
+          "batch_size": 64,
+          "lr": 0.002,
+          "weight_decay": 0.0001,
+          "noise_prob": 0.3,
+          "snr_db": [
+            20,
+            40
+          ]
+        },
+        "eval": {
+          "window_hop": 8000,
+          "max_fpr": 0.1
+        }
+      },
+      "format": "ONNX (opset 18), front-end log-mel inclus dans le graphe",
+      "input": "waveform : float32 (batch, 16000), mono 16 kHz, 1 s",
+      "license": "Poids entraînés sur ESC-50 (CC BY-NC 3.0) : usage non commercial",
+      "training": "ml/ (PyTorch), voir ml/reports",
+      "revision": "6a68c96"
     }
   ]
 }

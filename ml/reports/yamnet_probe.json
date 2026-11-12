@@ -1,0 +1,39 @@
+{
+  "git": "60d8606",
+  "method": "Régression logistique (C=0,5) sur les 521 scores YAMNet moyennés par clip",
+  "folds": [
+    {
+      "fold": 1,
+      "clip_accuracy": 0.785,
+      "clip_macro_f1": 0.7828787787032369
+    },
+    {
+      "fold": 2,
+      "clip_accuracy": 0.7975,
+      "clip_macro_f1": 0.804228961670138
+    },
+    {
+      "fold": 3,
+      "clip_accuracy": 0.81,
+      "clip_macro_f1": 0.8124942182001004
+    },
+    {
+      "fold": 4,
+      "clip_accuracy": 0.835,
+      "clip_macro_f1": 0.8341086331968683
+    },
+    {
+      "fold": 5,
+      "clip_accuracy": 0.8325,
+      "clip_macro_f1": 0.8315186241720768
+    }
+  ],
+  "mean": {
+    "clip_accuracy": 0.812,
+    "clip_macro_f1": 0.8130458431884842
+  },
+  "std": {
+    "clip_accuracy": 0.01945507645834371,
+    "clip_macro_f1": 0.018830710181501398
+  }
+}

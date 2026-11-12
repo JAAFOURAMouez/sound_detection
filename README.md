@@ -48,6 +48,24 @@ uv run ruff check .
 
 La configuration d'exemple se trouve dans `.env.example`.
 
+## Métriques mesurées
+
+Évaluation sur ESC-50 (2 000 clips, 50 classes), validation croisée sur les **5 plis officiels**
+(jamais mélangés). Détails, matrices de confusion et protocoles : [`ml/reports/`](ml/reports/).
+
+| Modèle | Exactitude (clip) | F1 macro | Exactitude (fenêtre 1 s) | Taille |
+|---|---|---|---|---|
+| CNN maison (850 k paramètres, log-mel dans le graphe ONNX) | 82,8 ± 1,6 % | 81,8 ± 1,6 % | 69,4 ± 2,0 % | 4,6 Mo |
+| YAMNet + régression logistique (référence) | 81,2 ± 1,9 % | 81,3 ± 1,9 % | — | 4,1 Mo |
+
+Détection d'anomalies (autoencodeur, 1,4 Mo) : 8 classes jamais vues à l'entraînement contre
+42 classes « ordinaires ». AUC-ROC par clip : **0,683 ± 0,018** avec la distance à la ligne de base
+des embeddings, 0,605 ± 0,022 avec l'erreur de reconstruction seule. C'est un résultat modeste,
+sur un protocole plus difficile que l'usage réel (la « normalité » y couvre 42 classes très
+différentes, au lieu de l'ambiance d'une seule pièce).
+
+Parité PyTorch / ONNX Runtime sur des fenêtres réelles : écart maximal 3,8 × 10⁻⁶ (tolérance 10⁻³).
+
 ## Documents
 
 | Fichier | Contenu |
@@ -57,6 +75,12 @@ La configuration d'exemple se trouve dans `.env.example`.
 | `docs/DESIGN.md` | Direction visuelle « poste d'écoute » |
 | `docs/ROADMAP.md` | Phases et critères d'acceptation |
 | `docs/DEPLOYMENT.md` | Mise en ligne gratuite |
+
+## Licences des modèles et des données
+
+- YAMNet : Apache-2.0 (Google). Sons de démonstration : voir `frontend/public/samples/SAMPLES.md`.
+- Les modèles maison sont entraînés sur ESC-50 (K. J. Piczak), sous licence **CC BY-NC 3.0** :
+  ils sont réservés à un usage non commercial.
 
 ## Avertissement
 
