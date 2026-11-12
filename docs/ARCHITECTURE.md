@@ -79,13 +79,20 @@ Deux étages, pour être robuste dans un environnement jamais vu :
      et la ligne de base.
    Score final normalisé dans [0, 1] : combinaison des deux, lissée par moyenne exponentielle.
 
+   Mise en œuvre (`frontend/src/inference/calibration.ts`, évaluée dans `ml/reports/autoencoder.md`) :
+   les statistiques portent sur le logarithme de l'erreur et de la distance (valeurs positives et
+   très asymétriques) ; z = (log x − médiane) / MAD, MAD bornée à 0,05 ; on retient le **plus
+   grand** des deux z (meilleure AUC par fenêtre que la somme ou chaque score seul) ; puis
+   s = z / (z + k), si bien que le seuil `médiane + k × MAD` vaut exactement s = 0,5. Une alerte
+   naît au franchissement montant du score lissé, au plus une fois toutes les 2 s.
+
 Évaluation hors-ligne : AUC-ROC et pAUC sur un protocole « classes normales contre classes
 tenues à l'écart » d'ESC-50, et si le temps le permet sur un sous-ensemble MIMII / DCASE Task 2
 (bruits de machines) pour illustrer le cas industriel.
 
 ### Dérive de l'environnement (F7)
 
-Comparer l'histogramme des familles et le niveau moyen sur une fenêtre récente (2 min) à ceux
+Comparer l'histogramme des familles et le niveau médian sur une fenêtre récente (2 min) à ceux
 de la ligne de base : divergence de Jensen-Shannon et écart de niveau. Au-delà d'un seuil
 maintenu 30 s, émettre un événement `drift` de gravité 0, qui propose de recalibrer.
 
