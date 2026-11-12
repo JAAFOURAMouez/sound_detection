@@ -193,3 +193,59 @@
     order: 3;
   }
 }
+
+/* Spectrogramme */
+.sg-spectrogram {
+  margin: 0;
+}
+
+.sg-spectrogram__frame {
+  position: relative;
+  height: 9rem;
+  padding-left: 2.25rem;
+}
+
+.sg-spectrogram__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.sg-spectrogram__axis {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-xs);
+  color: var(--sg-text-faint);
+}
+
+.sg-spectrogram__axis li {
+  position: absolute;
+  right: var(--sg-space-2);
+  transform: translateY(50%);
+}
+
+/* Vu-mètre */
+.sg-level {
+  display: grid;
+  grid-template-columns: auto 1fr 4.5rem;
+  align-items: center;
+  gap: var(--sg-space-2);
+}
+
+.sg-level__canvas {
+  width: 100%;
+  height: 1.1rem;
+}
+
+.sg-level__readout {
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--sg-text-dim);
+}
