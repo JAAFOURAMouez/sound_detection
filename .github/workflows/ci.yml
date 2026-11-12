@@ -82,7 +82,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: ml/uv.lock
-      - run: uv sync --locked
+      # torch en version CPU : les tests vérifient formes, export et parité, sans entraînement.
+      - run: uv sync --locked --extra cpu
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
