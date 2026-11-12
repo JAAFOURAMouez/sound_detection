@@ -51,6 +51,7 @@ describe('classifyMediaError', () => {
     ['NotFoundError', 'no-device'],
     ['OverconstrainedError', 'no-device'],
     ['NotReadableError', 'busy'],
+    ['NotSupportedError', 'unsupported'],
     ['TypeError', 'unknown'],
   ])('%s → %s', (name, kind) => {
     expect(classifyMediaError(new DOMException('x', name))).toBe(kind);

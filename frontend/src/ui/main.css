@@ -7,6 +7,9 @@
 
 .sg-panel-title {
   margin: 0;
+  display: block;
+  font-size: var(--sg-text-xs);
+  line-height: 1.5;
   padding: var(--sg-space-2) var(--sg-space-4);
   border-bottom: var(--sg-stroke) solid var(--sg-grid);
   font-weight: 400;
@@ -227,6 +230,11 @@
   position: absolute;
   right: var(--sg-space-2);
   transform: translateY(50%);
+}
+
+/* La graduation du haut (8 kHz) reste dans le cadre. */
+.sg-spectrogram__axis li:last-child {
+  transform: translateY(100%);
 }
 
 /* Vu-mètre */

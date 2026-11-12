@@ -40,6 +40,8 @@ export function classifyMediaError(error: unknown): CaptureErrorKind {
     case 'DevicesNotFoundError':
     case 'OverconstrainedError':
       return 'no-device';
+    case 'NotSupportedError':
+      return 'unsupported';
     case 'NotReadableError':
     case 'TrackStartError':
     case 'AbortError':
