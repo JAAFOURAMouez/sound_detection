@@ -1,0 +1,1315 @@
+{
+  "version": 1,
+  "model": "yamnet",
+  "description": "Regroupement des classes AudioSet de YAMNet en familles d'événements, avec une gravité de 0 (information) à 3 (danger potentiel). Les classes absentes appartiennent à la famille « other ».",
+  "families": {
+    "smoke_fire": {
+      "severity": 3
+    },
+    "explosion": {
+      "severity": 3
+    },
+    "voice_distress": {
+      "severity": 3
+    },
+    "alarm": {
+      "severity": 2
+    },
+    "glass": {
+      "severity": 2
+    },
+    "impact": {
+      "severity": 2
+    },
+    "mechanical": {
+      "severity": 1
+    },
+    "door_phone": {
+      "severity": 1
+    },
+    "water": {
+      "severity": 1
+    },
+    "voice": {
+      "severity": 0
+    },
+    "music": {
+      "severity": 0
+    },
+    "animal": {
+      "severity": 0
+    },
+    "ambient": {
+      "severity": 0
+    },
+    "other": {
+      "severity": 0
+    }
+  },
+  "classes": {
+    "0": {
+      "family": "voice",
+      "name": "Speech"
+    },
+    "1": {
+      "family": "voice",
+      "name": "Child speech, kid speaking"
+    },
+    "2": {
+      "family": "voice",
+      "name": "Conversation"
+    },
+    "3": {
+      "family": "voice",
+      "name": "Narration, monologue"
+    },
+    "4": {
+      "family": "voice",
+      "name": "Babbling"
+    },
+    "5": {
+      "family": "voice",
+      "name": "Speech synthesizer"
+    },
+    "6": {
+      "family": "voice_distress",
+      "name": "Shout"
+    },
+    "9": {
+      "family": "voice_distress",
+      "name": "Yell"
+    },
+    "11": {
+      "family": "voice_distress",
+      "name": "Screaming"
+    },
+    "12": {
+      "family": "voice",
+      "name": "Whispering"
+    },
+    "13": {
+      "family": "voice",
+      "name": "Laughter"
+    },
+    "14": {
+      "family": "voice",
+      "name": "Baby laughter"
+    },
+    "15": {
+      "family": "voice",
+      "name": "Giggle"
+    },
+    "16": {
+      "family": "voice",
+      "name": "Snicker"
+    },
+    "17": {
+      "family": "voice",
+      "name": "Belly laugh"
+    },
+    "18": {
+      "family": "voice",
+      "name": "Chuckle, chortle"
+    },
+    "19": {
+      "family": "voice_distress",
+      "name": "Crying, sobbing"
+    },
+    "20": {
+      "family": "voice_distress",
+      "name": "Baby cry, infant cry"
+    },
+    "21": {
+      "family": "voice_distress",
+      "name": "Whimper"
+    },
+    "22": {
+      "family": "voice_distress",
+      "name": "Wail, moan"
+    },
+    "24": {
+      "family": "voice",
+      "name": "Singing"
+    },
+    "33": {
+      "family": "voice_distress",
+      "name": "Groan"
+    },
+    "67": {
+      "family": "animal",
+      "name": "Animal"
+    },
+    "68": {
+      "family": "animal",
+      "name": "Domestic animals, pets"
+    },
+    "69": {
+      "family": "animal",
+      "name": "Dog"
+    },
+    "70": {
+      "family": "animal",
+      "name": "Bark"
+    },
+    "71": {
+      "family": "animal",
+      "name": "Yip"
+    },
+    "72": {
+      "family": "animal",
+      "name": "Howl"
+    },
+    "73": {
+      "family": "animal",
+      "name": "Bow-wow"
+    },
+    "74": {
+      "family": "animal",
+      "name": "Growling"
+    },
+    "75": {
+      "family": "animal",
+      "name": "Whimper (dog)"
+    },
+    "76": {
+      "family": "animal",
+      "name": "Cat"
+    },
+    "77": {
+      "family": "animal",
+      "name": "Purr"
+    },
+    "78": {
+      "family": "animal",
+      "name": "Meow"
+    },
+    "79": {
+      "family": "animal",
+      "name": "Hiss"
+    },
+    "80": {
+      "family": "animal",
+      "name": "Caterwaul"
+    },
+    "81": {
+      "family": "animal",
+      "name": "Livestock, farm animals, working animals"
+    },
+    "82": {
+      "family": "animal",
+      "name": "Horse"
+    },
+    "83": {
+      "family": "animal",
+      "name": "Clip-clop"
+    },
+    "84": {
+      "family": "animal",
+      "name": "Neigh, whinny"
+    },
+    "85": {
+      "family": "animal",
+      "name": "Cattle, bovinae"
+    },
+    "86": {
+      "family": "animal",
+      "name": "Moo"
+    },
+    "87": {
+      "family": "animal",
+      "name": "Cowbell"
+    },
+    "88": {
+      "family": "animal",
+      "name": "Pig"
+    },
+    "89": {
+      "family": "animal",
+      "name": "Oink"
+    },
+    "90": {
+      "family": "animal",
+      "name": "Goat"
+    },
+    "91": {
+      "family": "animal",
+      "name": "Bleat"
+    },
+    "92": {
+      "family": "animal",
+      "name": "Sheep"
+    },
+    "93": {
+      "family": "animal",
+      "name": "Fowl"
+    },
+    "94": {
+      "family": "animal",
+      "name": "Chicken, rooster"
+    },
+    "95": {
+      "family": "animal",
+      "name": "Cluck"
+    },
+    "96": {
+      "family": "animal",
+      "name": "Crowing, cock-a-doodle-doo"
+    },
+    "97": {
+      "family": "animal",
+      "name": "Turkey"
+    },
+    "98": {
+      "family": "animal",
+      "name": "Gobble"
+    },
+    "99": {
+      "family": "animal",
+      "name": "Duck"
+    },
+    "100": {
+      "family": "animal",
+      "name": "Quack"
+    },
+    "101": {
+      "family": "animal",
+      "name": "Goose"
+    },
+    "102": {
+      "family": "animal",
+      "name": "Honk"
+    },
+    "103": {
+      "family": "animal",
+      "name": "Wild animals"
+    },
+    "104": {
+      "family": "animal",
+      "name": "Roaring cats (lions, tigers)"
+    },
+    "105": {
+      "family": "animal",
+      "name": "Roar"
+    },
+    "106": {
+      "family": "animal",
+      "name": "Bird"
+    },
+    "107": {
+      "family": "animal",
+      "name": "Bird vocalization, bird call, bird song"
+    },
+    "108": {
+      "family": "animal",
+      "name": "Chirp, tweet"
+    },
+    "109": {
+      "family": "animal",
+      "name": "Squawk"
+    },
+    "110": {
+      "family": "animal",
+      "name": "Pigeon, dove"
+    },
+    "111": {
+      "family": "animal",
+      "name": "Coo"
+    },
+    "112": {
+      "family": "animal",
+      "name": "Crow"
+    },
+    "113": {
+      "family": "animal",
+      "name": "Caw"
+    },
+    "114": {
+      "family": "animal",
+      "name": "Owl"
+    },
+    "115": {
+      "family": "animal",
+      "name": "Hoot"
+    },
+    "116": {
+      "family": "animal",
+      "name": "Bird flight, flapping wings"
+    },
+    "117": {
+      "family": "animal",
+      "name": "Canidae, dogs, wolves"
+    },
+    "118": {
+      "family": "animal",
+      "name": "Rodents, rats, mice"
+    },
+    "119": {
+      "family": "animal",
+      "name": "Mouse"
+    },
+    "120": {
+      "family": "animal",
+      "name": "Patter"
+    },
+    "121": {
+      "family": "animal",
+      "name": "Insect"
+    },
+    "122": {
+      "family": "animal",
+      "name": "Cricket"
+    },
+    "123": {
+      "family": "animal",
+      "name": "Mosquito"
+    },
+    "124": {
+      "family": "animal",
+      "name": "Fly, housefly"
+    },
+    "125": {
+      "family": "animal",
+      "name": "Buzz"
+    },
+    "126": {
+      "family": "animal",
+      "name": "Bee, wasp, etc."
+    },
+    "127": {
+      "family": "animal",
+      "name": "Frog"
+    },
+    "128": {
+      "family": "animal",
+      "name": "Croak"
+    },
+    "129": {
+      "family": "animal",
+      "name": "Snake"
+    },
+    "130": {
+      "family": "animal",
+      "name": "Rattle"
+    },
+    "131": {
+      "family": "animal",
+      "name": "Whale vocalization"
+    },
+    "132": {
+      "family": "music",
+      "name": "Music"
+    },
+    "133": {
+      "family": "music",
+      "name": "Musical instrument"
+    },
+    "134": {
+      "family": "music",
+      "name": "Plucked string instrument"
+    },
+    "135": {
+      "family": "music",
+      "name": "Guitar"
+    },
+    "136": {
+      "family": "music",
+      "name": "Electric guitar"
+    },
+    "137": {
+      "family": "music",
+      "name": "Bass guitar"
+    },
+    "138": {
+      "family": "music",
+      "name": "Acoustic guitar"
+    },
+    "139": {
+      "family": "music",
+      "name": "Steel guitar, slide guitar"
+    },
+    "140": {
+      "family": "music",
+      "name": "Tapping (guitar technique)"
+    },
+    "141": {
+      "family": "music",
+      "name": "Strum"
+    },
+    "142": {
+      "family": "music",
+      "name": "Banjo"
+    },
+    "143": {
+      "family": "music",
+      "name": "Sitar"
+    },
+    "144": {
+      "family": "music",
+      "name": "Mandolin"
+    },
+    "145": {
+      "family": "music",
+      "name": "Zither"
+    },
+    "146": {
+      "family": "music",
+      "name": "Ukulele"
+    },
+    "147": {
+      "family": "music",
+      "name": "Keyboard (musical)"
+    },
+    "148": {
+      "family": "music",
+      "name": "Piano"
+    },
+    "149": {
+      "family": "music",
+      "name": "Electric piano"
+    },
+    "150": {
+      "family": "music",
+      "name": "Organ"
+    },
+    "151": {
+      "family": "music",
+      "name": "Electronic organ"
+    },
+    "152": {
+      "family": "music",
+      "name": "Hammond organ"
+    },
+    "153": {
+      "family": "music",
+      "name": "Synthesizer"
+    },
+    "154": {
+      "family": "music",
+      "name": "Sampler"
+    },
+    "155": {
+      "family": "music",
+      "name": "Harpsichord"
+    },
+    "156": {
+      "family": "music",
+      "name": "Percussion"
+    },
+    "157": {
+      "family": "music",
+      "name": "Drum kit"
+    },
+    "158": {
+      "family": "music",
+      "name": "Drum machine"
+    },
+    "159": {
+      "family": "music",
+      "name": "Drum"
+    },
+    "160": {
+      "family": "music",
+      "name": "Snare drum"
+    },
+    "161": {
+      "family": "music",
+      "name": "Rimshot"
+    },
+    "162": {
+      "family": "music",
+      "name": "Drum roll"
+    },
+    "163": {
+      "family": "music",
+      "name": "Bass drum"
+    },
+    "164": {
+      "family": "music",
+      "name": "Timpani"
+    },
+    "165": {
+      "family": "music",
+      "name": "Tabla"
+    },
+    "166": {
+      "family": "music",
+      "name": "Cymbal"
+    },
+    "167": {
+      "family": "music",
+      "name": "Hi-hat"
+    },
+    "168": {
+      "family": "music",
+      "name": "Wood block"
+    },
+    "169": {
+      "family": "music",
+      "name": "Tambourine"
+    },
+    "170": {
+      "family": "music",
+      "name": "Rattle (instrument)"
+    },
+    "171": {
+      "family": "music",
+      "name": "Maraca"
+    },
+    "172": {
+      "family": "music",
+      "name": "Gong"
+    },
+    "173": {
+      "family": "music",
+      "name": "Tubular bells"
+    },
+    "174": {
+      "family": "music",
+      "name": "Mallet percussion"
+    },
+    "175": {
+      "family": "music",
+      "name": "Marimba, xylophone"
+    },
+    "176": {
+      "family": "music",
+      "name": "Glockenspiel"
+    },
+    "177": {
+      "family": "music",
+      "name": "Vibraphone"
+    },
+    "178": {
+      "family": "music",
+      "name": "Steelpan"
+    },
+    "179": {
+      "family": "music",
+      "name": "Orchestra"
+    },
+    "180": {
+      "family": "music",
+      "name": "Brass instrument"
+    },
+    "181": {
+      "family": "music",
+      "name": "French horn"
+    },
+    "182": {
+      "family": "music",
+      "name": "Trumpet"
+    },
+    "183": {
+      "family": "music",
+      "name": "Trombone"
+    },
+    "184": {
+      "family": "music",
+      "name": "Bowed string instrument"
+    },
+    "185": {
+      "family": "music",
+      "name": "String section"
+    },
+    "186": {
+      "family": "music",
+      "name": "Violin, fiddle"
+    },
+    "187": {
+      "family": "music",
+      "name": "Pizzicato"
+    },
+    "188": {
+      "family": "music",
+      "name": "Cello"
+    },
+    "189": {
+      "family": "music",
+      "name": "Double bass"
+    },
+    "190": {
+      "family": "music",
+      "name": "Wind instrument, woodwind instrument"
+    },
+    "191": {
+      "family": "music",
+      "name": "Flute"
+    },
+    "192": {
+      "family": "music",
+      "name": "Saxophone"
+    },
+    "193": {
+      "family": "music",
+      "name": "Clarinet"
+    },
+    "194": {
+      "family": "music",
+      "name": "Harp"
+    },
+    "195": {
+      "family": "music",
+      "name": "Bell"
+    },
+    "196": {
+      "family": "music",
+      "name": "Church bell"
+    },
+    "197": {
+      "family": "music",
+      "name": "Jingle bell"
+    },
+    "198": {
+      "family": "music",
+      "name": "Bicycle bell"
+    },
+    "199": {
+      "family": "music",
+      "name": "Tuning fork"
+    },
+    "200": {
+      "family": "music",
+      "name": "Chime"
+    },
+    "201": {
+      "family": "music",
+      "name": "Wind chime"
+    },
+    "202": {
+      "family": "music",
+      "name": "Change ringing (campanology)"
+    },
+    "203": {
+      "family": "music",
+      "name": "Harmonica"
+    },
+    "204": {
+      "family": "music",
+      "name": "Accordion"
+    },
+    "205": {
+      "family": "music",
+      "name": "Bagpipes"
+    },
+    "206": {
+      "family": "music",
+      "name": "Didgeridoo"
+    },
+    "207": {
+      "family": "music",
+      "name": "Shofar"
+    },
+    "208": {
+      "family": "music",
+      "name": "Theremin"
+    },
+    "209": {
+      "family": "music",
+      "name": "Singing bowl"
+    },
+    "210": {
+      "family": "music",
+      "name": "Scratching (performance technique)"
+    },
+    "211": {
+      "family": "music",
+      "name": "Pop music"
+    },
+    "212": {
+      "family": "music",
+      "name": "Hip hop music"
+    },
+    "213": {
+      "family": "music",
+      "name": "Beatboxing"
+    },
+    "214": {
+      "family": "music",
+      "name": "Rock music"
+    },
+    "215": {
+      "family": "music",
+      "name": "Heavy metal"
+    },
+    "216": {
+      "family": "music",
+      "name": "Punk rock"
+    },
+    "217": {
+      "family": "music",
+      "name": "Grunge"
+    },
+    "218": {
+      "family": "music",
+      "name": "Progressive rock"
+    },
+    "219": {
+      "family": "music",
+      "name": "Rock and roll"
+    },
+    "220": {
+      "family": "music",
+      "name": "Psychedelic rock"
+    },
+    "221": {
+      "family": "music",
+      "name": "Rhythm and blues"
+    },
+    "222": {
+      "family": "music",
+      "name": "Soul music"
+    },
+    "223": {
+      "family": "music",
+      "name": "Reggae"
+    },
+    "224": {
+      "family": "music",
+      "name": "Country"
+    },
+    "225": {
+      "family": "music",
+      "name": "Swing music"
+    },
+    "226": {
+      "family": "music",
+      "name": "Bluegrass"
+    },
+    "227": {
+      "family": "music",
+      "name": "Funk"
+    },
+    "228": {
+      "family": "music",
+      "name": "Folk music"
+    },
+    "229": {
+      "family": "music",
+      "name": "Middle Eastern music"
+    },
+    "230": {
+      "family": "music",
+      "name": "Jazz"
+    },
+    "231": {
+      "family": "music",
+      "name": "Disco"
+    },
+    "232": {
+      "family": "music",
+      "name": "Classical music"
+    },
+    "233": {
+      "family": "music",
+      "name": "Opera"
+    },
+    "234": {
+      "family": "music",
+      "name": "Electronic music"
+    },
+    "235": {
+      "family": "music",
+      "name": "House music"
+    },
+    "236": {
+      "family": "music",
+      "name": "Techno"
+    },
+    "237": {
+      "family": "music",
+      "name": "Dubstep"
+    },
+    "238": {
+      "family": "music",
+      "name": "Drum and bass"
+    },
+    "239": {
+      "family": "music",
+      "name": "Electronica"
+    },
+    "240": {
+      "family": "music",
+      "name": "Electronic dance music"
+    },
+    "241": {
+      "family": "music",
+      "name": "Ambient music"
+    },
+    "242": {
+      "family": "music",
+      "name": "Trance music"
+    },
+    "243": {
+      "family": "music",
+      "name": "Music of Latin America"
+    },
+    "244": {
+      "family": "music",
+      "name": "Salsa music"
+    },
+    "245": {
+      "family": "music",
+      "name": "Flamenco"
+    },
+    "246": {
+      "family": "music",
+      "name": "Blues"
+    },
+    "247": {
+      "family": "music",
+      "name": "Music for children"
+    },
+    "248": {
+      "family": "music",
+      "name": "New-age music"
+    },
+    "249": {
+      "family": "music",
+      "name": "Vocal music"
+    },
+    "250": {
+      "family": "music",
+      "name": "A capella"
+    },
+    "251": {
+      "family": "music",
+      "name": "Music of Africa"
+    },
+    "252": {
+      "family": "music",
+      "name": "Afrobeat"
+    },
+    "253": {
+      "family": "music",
+      "name": "Christian music"
+    },
+    "254": {
+      "family": "music",
+      "name": "Gospel music"
+    },
+    "255": {
+      "family": "music",
+      "name": "Music of Asia"
+    },
+    "256": {
+      "family": "music",
+      "name": "Carnatic music"
+    },
+    "257": {
+      "family": "music",
+      "name": "Music of Bollywood"
+    },
+    "258": {
+      "family": "music",
+      "name": "Ska"
+    },
+    "259": {
+      "family": "music",
+      "name": "Traditional music"
+    },
+    "260": {
+      "family": "music",
+      "name": "Independent music"
+    },
+    "261": {
+      "family": "music",
+      "name": "Song"
+    },
+    "262": {
+      "family": "music",
+      "name": "Background music"
+    },
+    "263": {
+      "family": "music",
+      "name": "Theme music"
+    },
+    "264": {
+      "family": "music",
+      "name": "Jingle (music)"
+    },
+    "265": {
+      "family": "music",
+      "name": "Soundtrack music"
+    },
+    "266": {
+      "family": "music",
+      "name": "Lullaby"
+    },
+    "267": {
+      "family": "music",
+      "name": "Video game music"
+    },
+    "268": {
+      "family": "music",
+      "name": "Christmas music"
+    },
+    "269": {
+      "family": "music",
+      "name": "Dance music"
+    },
+    "270": {
+      "family": "music",
+      "name": "Wedding music"
+    },
+    "271": {
+      "family": "music",
+      "name": "Happy music"
+    },
+    "272": {
+      "family": "music",
+      "name": "Sad music"
+    },
+    "273": {
+      "family": "music",
+      "name": "Tender music"
+    },
+    "274": {
+      "family": "music",
+      "name": "Exciting music"
+    },
+    "275": {
+      "family": "music",
+      "name": "Angry music"
+    },
+    "276": {
+      "family": "music",
+      "name": "Scary music"
+    },
+    "277": {
+      "family": "ambient",
+      "name": "Wind"
+    },
+    "278": {
+      "family": "ambient",
+      "name": "Rustling leaves"
+    },
+    "279": {
+      "family": "ambient",
+      "name": "Wind noise (microphone)"
+    },
+    "283": {
+      "family": "ambient",
+      "name": "Rain"
+    },
+    "284": {
+      "family": "ambient",
+      "name": "Raindrop"
+    },
+    "285": {
+      "family": "ambient",
+      "name": "Rain on surface"
+    },
+    "304": {
+      "family": "alarm",
+      "name": "Car alarm"
+    },
+    "313": {
+      "family": "alarm",
+      "name": "Reversing beeps"
+    },
+    "316": {
+      "family": "alarm",
+      "name": "Emergency vehicle"
+    },
+    "317": {
+      "family": "alarm",
+      "name": "Police car (siren)"
+    },
+    "318": {
+      "family": "alarm",
+      "name": "Ambulance (siren)"
+    },
+    "319": {
+      "family": "alarm",
+      "name": "Fire engine, fire truck (siren)"
+    },
+    "321": {
+      "family": "ambient",
+      "name": "Traffic noise, roadway noise"
+    },
+    "337": {
+      "family": "mechanical",
+      "name": "Engine"
+    },
+    "338": {
+      "family": "mechanical",
+      "name": "Light engine (high frequency)"
+    },
+    "341": {
+      "family": "mechanical",
+      "name": "Chainsaw"
+    },
+    "342": {
+      "family": "mechanical",
+      "name": "Medium engine (mid frequency)"
+    },
+    "343": {
+      "family": "mechanical",
+      "name": "Heavy engine (low frequency)"
+    },
+    "344": {
+      "family": "mechanical",
+      "name": "Engine knocking"
+    },
+    "348": {
+      "family": "door_phone",
+      "name": "Door"
+    },
+    "349": {
+      "family": "door_phone",
+      "name": "Doorbell"
+    },
+    "350": {
+      "family": "door_phone",
+      "name": "Ding-dong"
+    },
+    "352": {
+      "family": "impact",
+      "name": "Slam"
+    },
+    "353": {
+      "family": "door_phone",
+      "name": "Knock"
+    },
+    "363": {
+      "family": "mechanical",
+      "name": "Blender"
+    },
+    "364": {
+      "family": "water",
+      "name": "Water tap, faucet"
+    },
+    "365": {
+      "family": "water",
+      "name": "Sink (filling or washing)"
+    },
+    "366": {
+      "family": "water",
+      "name": "Bathtub (filling or washing)"
+    },
+    "371": {
+      "family": "mechanical",
+      "name": "Vacuum cleaner"
+    },
+    "382": {
+      "family": "alarm",
+      "name": "Alarm"
+    },
+    "383": {
+      "family": "door_phone",
+      "name": "Telephone"
+    },
+    "384": {
+      "family": "door_phone",
+      "name": "Telephone bell ringing"
+    },
+    "385": {
+      "family": "door_phone",
+      "name": "Ringtone"
+    },
+    "389": {
+      "family": "alarm",
+      "name": "Alarm clock"
+    },
+    "390": {
+      "family": "alarm",
+      "name": "Siren"
+    },
+    "391": {
+      "family": "alarm",
+      "name": "Civil defense siren"
+    },
+    "392": {
+      "family": "alarm",
+      "name": "Buzzer"
+    },
+    "393": {
+      "family": "smoke_fire",
+      "name": "Smoke detector, smoke alarm"
+    },
+    "394": {
+      "family": "smoke_fire",
+      "name": "Fire alarm"
+    },
+    "395": {
+      "family": "alarm",
+      "name": "Foghorn"
+    },
+    "398": {
+      "family": "mechanical",
+      "name": "Mechanisms"
+    },
+    "399": {
+      "family": "mechanical",
+      "name": "Ratchet, pawl"
+    },
+    "403": {
+      "family": "mechanical",
+      "name": "Gears"
+    },
+    "404": {
+      "family": "mechanical",
+      "name": "Pulleys"
+    },
+    "406": {
+      "family": "mechanical",
+      "name": "Mechanical fan"
+    },
+    "407": {
+      "family": "mechanical",
+      "name": "Air conditioning"
+    },
+    "414": {
+      "family": "mechanical",
+      "name": "Jackhammer"
+    },
+    "415": {
+      "family": "mechanical",
+      "name": "Sawing"
+    },
+    "418": {
+      "family": "mechanical",
+      "name": "Power tool"
+    },
+    "419": {
+      "family": "mechanical",
+      "name": "Drill"
+    },
+    "420": {
+      "family": "explosion",
+      "name": "Explosion"
+    },
+    "421": {
+      "family": "explosion",
+      "name": "Gunshot, gunfire"
+    },
+    "422": {
+      "family": "explosion",
+      "name": "Machine gun"
+    },
+    "423": {
+      "family": "explosion",
+      "name": "Fusillade"
+    },
+    "424": {
+      "family": "explosion",
+      "name": "Artillery fire"
+    },
+    "426": {
+      "family": "impact",
+      "name": "Fireworks"
+    },
+    "427": {
+      "family": "impact",
+      "name": "Firecracker"
+    },
+    "428": {
+      "family": "impact",
+      "name": "Burst, pop"
+    },
+    "430": {
+      "family": "impact",
+      "name": "Boom"
+    },
+    "435": {
+      "family": "glass",
+      "name": "Glass"
+    },
+    "437": {
+      "family": "glass",
+      "name": "Shatter"
+    },
+    "442": {
+      "family": "water",
+      "name": "Drip"
+    },
+    "445": {
+      "family": "water",
+      "name": "Gush"
+    },
+    "454": {
+      "family": "impact",
+      "name": "Thump, thud"
+    },
+    "455": {
+      "family": "impact",
+      "name": "Thunk"
+    },
+    "460": {
+      "family": "impact",
+      "name": "Bang"
+    },
+    "463": {
+      "family": "impact",
+      "name": "Smash, crash"
+    },
+    "464": {
+      "family": "impact",
+      "name": "Breaking"
+    },
+    "475": {
+      "family": "alarm",
+      "name": "Beep, bleep"
+    },
+    "482": {
+      "family": "mechanical",
+      "name": "Whir"
+    },
+    "490": {
+      "family": "mechanical",
+      "name": "Hum"
+    },
+    "494": {
+      "family": "ambient",
+      "name": "Silence"
+    },
+    "500": {
+      "family": "ambient",
+      "name": "Inside, small room"
+    },
+    "501": {
+      "family": "ambient",
+      "name": "Inside, large room or hall"
+    },
+    "502": {
+      "family": "ambient",
+      "name": "Inside, public space"
+    },
+    "503": {
+      "family": "ambient",
+      "name": "Outside, urban or manmade"
+    },
+    "504": {
+      "family": "ambient",
+      "name": "Outside, rural or natural"
+    },
+    "507": {
+      "family": "ambient",
+      "name": "Noise"
+    },
+    "508": {
+      "family": "ambient",
+      "name": "Environmental noise"
+    },
+    "510": {
+      "family": "mechanical",
+      "name": "Mains hum"
+    },
+    "514": {
+      "family": "ambient",
+      "name": "White noise"
+    },
+    "515": {
+      "family": "ambient",
+      "name": "Pink noise"
+    },
+    "516": {
+      "family": "mechanical",
+      "name": "Throbbing"
+    },
+    "517": {
+      "family": "mechanical",
+      "name": "Vibration"
+    }
+  }
+}
