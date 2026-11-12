@@ -13,6 +13,7 @@ describe('LiveLabels', () => {
     render(
       <LiveLabels
         live={{
+          model: 'yamnet',
           top: [
             { index: 435, name: 'Glass', score: 0.71, family: 'glass' },
             { index: 437, name: 'Shatter', score: 0.42, family: 'glass' },

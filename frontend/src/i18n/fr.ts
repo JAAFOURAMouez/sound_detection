@@ -47,6 +47,28 @@ export const fr = {
     resume: 'Reprendre l’écoute',
     stop: 'Arrêter l’écoute',
   },
+  anomaly: {
+    title: 'Score d’anomalie',
+    calibrating: 'Calibration de l’ambiance',
+    calibratingHint:
+      'Garde le calme quelques secondes : SoundGuard apprend le bruit normal de la pièce.',
+    threshold: 'seuil',
+    calm: 'ambiance habituelle',
+    above: 'au-dessus du seuil',
+    alerts: 'alertes depuis la calibration',
+    recalibrate: 'Recalibrer',
+    unavailable: 'Détection d’anomalies indisponible (classification seule).',
+    drift: 'L’ambiance a changé durablement. Recalibrer ?',
+    driftDetail: 'divergence',
+    level: 'niveau',
+  },
+  classifier: {
+    label: 'classifieur',
+    yamnet: 'YAMNet',
+    cnn: 'CNN maison',
+    switching: 'chargement…',
+    failed: 'Le modèle n’a pas pu être chargé.',
+  },
   live: {
     title: 'Classes en direct',
     waiting: 'Analyse en attente du premier son…',

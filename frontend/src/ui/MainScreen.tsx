@@ -12,6 +12,9 @@ interface MainScreenProps {
   level: ReactNode;
   spectrogram: ReactNode;
   live: ReactNode;
+  anomaly?: ReactNode;
+  controls?: ReactNode;
+  calibration?: number | null;
   demoPicker: ReactNode;
   onPause: () => void;
   onResume: () => void;
@@ -25,6 +28,9 @@ export function MainScreen({
   level,
   spectrogram,
   live,
+  anomaly = null,
+  controls = null,
+  calibration = null,
   demoPicker,
   onPause,
   onResume,
@@ -36,15 +42,20 @@ export function MainScreen({
         status={status}
         demo={demo}
         model={model}
+        controls={controls}
         level={level}
         onPause={onPause}
         onResume={onResume}
         onStop={onStop}
       />
       <main className="sg-main__body">
-        <Radar sweeping={status === 'monitoring'} />
+        <Radar
+          sweeping={status === 'monitoring' || status === 'calibrating'}
+          calibration={calibration}
+        />
         <div className="sg-side">
           {demoPicker}
+          {anomaly}
           {live}
           <Journal />
         </div>

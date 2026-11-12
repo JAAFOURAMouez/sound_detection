@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { t } from '../i18n';
 import { RADAR_PERIOD_SECONDS, RADAR_RINGS, RADAR_TICKS } from './viz/config';
 import { angleForTime, polarToCanvas } from './viz/radarGeometry';
@@ -7,6 +7,8 @@ import { type CanvasFrame, prefersReducedMotion, useCanvasLoop } from './useCanv
 interface RadarProps {
   /** Le balayage tourne seulement pendant l'écoute. */
   sweeping: boolean;
+  /** Progression de la calibration (0 à 1), ou null hors calibration. */
+  calibration?: number | null;
 }
 
 function cssVar(name: string, fallback: string): string {
@@ -14,7 +16,11 @@ function cssVar(name: string, fallback: string): string {
   return value || fallback;
 }
 
-export function Radar({ sweeping }: RadarProps) {
+export function Radar({ sweeping, calibration = null }: RadarProps) {
+  const calibrationRef = useRef(calibration);
+  useEffect(() => {
+    calibrationRef.current = calibration;
+  }, [calibration]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const reduced = prefersReducedMotion();
   const colors = useRef<{ grid: string; strong: string; phosphor: string; faint: string } | null>(
@@ -73,6 +79,25 @@ export function Radar({ sweeping }: RadarProps) {
     ctx.lineTo(cx, cy + radius);
     ctx.stroke();
 
+    // Calibration : un anneau se remplit pour matérialiser la ligne de base en construction.
+    const progress = calibrationRef.current;
+    if (progress !== null) {
+      const ring = radius * 0.5;
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = c.grid;
+      ctx.beginPath();
+      ctx.arc(cx, cy, ring, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.strokeStyle = c.phosphor;
+      ctx.beginPath();
+      ctx.arc(cx, cy, ring, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * progress);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.fillStyle = c.phosphor;
+      ctx.font = '600 14px "IBM Plex Mono", monospace';
+      ctx.fillText(`${String(Math.round(progress * 100))} %`, cx, cy);
+    }
+
     if (!sweeping) return;
 
     // Balayage : l'aiguille donne l'instant présent, une traînée marque les secondes passées.
@@ -100,7 +125,7 @@ export function Radar({ sweeping }: RadarProps) {
     ctx.stroke();
   };
 
-  useCanvasLoop(canvasRef, draw, sweeping && !reduced);
+  useCanvasLoop(canvasRef, draw, (sweeping && !reduced) || calibration !== null);
 
   return (
     <figure className="sg-radar" aria-labelledby="radar-title" aria-describedby="radar-desc">

@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { CaptureError, type CaptureSession, type ChunkListener } from '../audio/capture';
 import type { DemoSession } from '../audio/demo';
-import { DEMO_SAMPLES } from '../demo/samples';
-import type { ClassifierClient, ResultListener } from '../inference/classifierClient';
+import { DEMO_AMBIENCE, DEMO_SAMPLES } from '../demo/samples';
+import type { ClassifierClient } from '../inference/classifierClient';
+import type { LoadInfo } from '../inference/messages';
 import { type AppDeps, createAppStore } from './appStore';
 
 function fakeSession<K extends 'mic' | 'demo'>(kind: K) {
@@ -12,6 +13,7 @@ function fakeSession<K extends 'mic' | 'demo'>(kind: K) {
     resume: vi.fn(() => Promise.resolve()),
     stop: vi.fn(() => Promise.resolve()),
     playSample: vi.fn(() => Promise.resolve({ startedAt: 100, duration: 2 })),
+    startAmbience: vi.fn(() => Promise.resolve()),
   };
   const session = {
     kind,
@@ -29,84 +31,114 @@ function fakeSession<K extends 'mic' | 'demo'>(kind: K) {
   return { session, spies, emitChunk: (s: Float32Array) => chunkListener?.(s) };
 }
 
+const loaded: LoadInfo = { loadMs: 5, fromCache: false, modelBytes: 10, anomaly: true };
+
 function fakeClient() {
-  let resultListener: ResultListener | null = null;
+  const listeners = new Map<string, (e: unknown) => void>();
   const spies = {
-    load: vi.fn(() => Promise.resolve({ loadMs: 5, fromCache: false, modelBytes: 10 })),
+    load: vi.fn((_url: string, _kind?: string) => Promise.resolve(loaded)),
     push: vi.fn(),
     reset: vi.fn(),
+    calibrate: vi.fn(),
+    setClassifier: vi.fn(() => Promise.resolve(true)),
   };
   const client = {
     ...spies,
-    onResult: (l: ResultListener) => {
-      resultListener = l;
-      return () => {
-        resultListener = null;
-      };
+    on: (type: string, l: (e: unknown) => void) => {
+      listeners.set(type, l);
+      return () => listeners.delete(type);
     },
     dispose: vi.fn(),
   } as unknown as ClassifierClient;
-  return { client, spies, emit: (r: Parameters<ResultListener>[0]) => resultListener?.(r) };
+  const emit = (type: string, payload: object) =>
+    listeners.get(type)?.({ receivedAt: 1, ...payload });
+  return { client, spies, emit };
 }
 
-function makeStore(overrides: Partial<AppDeps> = {}) {
-  const c = fakeClient();
+const anomaly = (score: number, alert = false) => ({
+  windowEndSample: 0,
+  raw: score,
+  score,
+  zReconstruction: 0,
+  zEmbedding: 0,
+  levelDb: -40,
+  above: score >= 0.5,
+  alert,
+});
+
+function makeStore(overrides: Partial<AppDeps> = {}, c = fakeClient()) {
   const store = createAppStore({
     createClient: () => c.client,
     baseUrl: () => 'http://localhost/',
     startCapture: () => Promise.resolve(fakeSession('mic').session),
     startDemo: () => Promise.resolve(fakeSession('demo').session as unknown as DemoSession),
+    calibrationSeconds: 30,
     ...overrides,
   });
   return { store, client: c };
 }
 
 describe('appStore', () => {
-  it('démarre à l’arrêt, sans charger le modèle', () => {
+  it('démarre à l’arrêt, sans charger les modèles', () => {
     const { store, client } = makeStore();
     expect(store.getState().status).toBe('idle');
     expect(client.spies.load).not.toHaveBeenCalled();
   });
 
-  it('passe par la demande d’autorisation puis l’écoute, en chargeant le modèle', async () => {
+  it('demande l’autorisation, charge les modèles puis calibre avant d’écouter', async () => {
     let resolve: (s: CaptureSession) => void = () => undefined;
     const { store, client } = makeStore({ startCapture: () => new Promise((r) => (resolve = r)) });
     const pending = store.getState().requestCapture();
     expect(store.getState().status).toBe('consent');
-    expect(client.spies.load).toHaveBeenCalledWith('http://localhost/');
+    expect(client.spies.load).toHaveBeenCalledWith('http://localhost/', 'yamnet');
     resolve(fakeSession('mic').session);
     await pending;
-    expect(store.getState()).toMatchObject({ status: 'monitoring', source: 'mic' });
-    expect(store.getState().model.status).toBe('ready');
+    expect(store.getState()).toMatchObject({ status: 'calibrating', source: 'mic' });
+    expect(client.spies.calibrate).toHaveBeenCalledWith(30);
+
+    client.emit('calibration', { progress: 0.5, done: false });
+    expect(store.getState().calibration.progress).toBe(0.5);
+    client.emit('calibration', { progress: 1, done: true });
+    expect(store.getState().status).toBe('monitoring');
   });
 
-  it('envoie les blocs au classifieur et publie le résultat en direct', async () => {
+  it('envoie les blocs au worker et publie classes, score d’anomalie et alertes', async () => {
     const mic = fakeSession('mic');
     const { store, client } = makeStore({ startCapture: () => Promise.resolve(mic.session) });
     await store.getState().requestCapture();
     const chunk = new Float32Array(1_600);
     mic.emitChunk(chunk);
     expect(client.spies.push).toHaveBeenCalledWith(chunk);
-    const result = {
+
+    client.emit('result', {
+      model: 'yamnet',
       top: [],
       families: [],
       dominant: null,
-      windowEndSample: 15_600,
-      inferenceMs: 4,
-      receivedAt: 9,
-    };
-    client.emit(result);
-    expect(store.getState().live).toEqual(result);
+      windowEndSample: 1,
+      inferenceMs: 2,
+    });
+    expect(store.getState().live?.model).toBe('yamnet');
+    client.emit('anomaly', anomaly(0.2));
+    client.emit('anomaly', anomaly(0.7, true));
+    client.emit('anomaly', anomaly(0.8));
+    expect(store.getState().anomaly?.score).toBe(0.8);
+    expect(store.getState().alerts).toBe(1);
   });
 
-  it('enregistre l’échec du chargement du modèle sans bloquer l’écoute', async () => {
+  it('passe à l’écoute sans calibration si l’autoencodeur manque', async () => {
+    const c = fakeClient();
+    c.spies.load.mockResolvedValueOnce({ ...loaded, anomaly: false });
+    const { store } = makeStore({}, c);
+    await store.getState().requestCapture();
+    await Promise.resolve();
+    expect(store.getState().status).toBe('monitoring');
+  });
+
+  it('enregistre l’échec du chargement des modèles sans bloquer l’écoute', async () => {
     const c = fakeClient();
     c.spies.load.mockRejectedValueOnce(new Error('réseau'));
-    const store = createAppStore({
-      createClient: () => c.client,
-      baseUrl: () => 'http://localhost/',
-      startCapture: () => Promise.resolve(fakeSession('mic').session),
-    });
+    const { store } = makeStore({}, c);
     await store.getState().requestCapture();
     await Promise.resolve();
     expect(store.getState().status).toBe('monitoring');
@@ -122,10 +154,10 @@ describe('appStore', () => {
     await store.getState().requestCapture();
     expect(store.getState()).toMatchObject({ status: 'error', errorKind: 'denied' });
     await store.getState().requestCapture();
-    expect(store.getState()).toMatchObject({ status: 'monitoring', errorKind: null });
+    expect(store.getState()).toMatchObject({ status: 'calibrating', errorKind: null });
   });
 
-  it('lance le mode démonstration sans micro et joue un échantillon', async () => {
+  it('lance la démo sans micro, avec l’ambiance en fond, et joue un échantillon', async () => {
     const demo = fakeSession('demo');
     const startCaptureSpy = vi.fn();
     const { store, client } = makeStore({
@@ -133,9 +165,14 @@ describe('appStore', () => {
       startCapture: startCaptureSpy,
     });
     await store.getState().requestDemo();
-    expect(store.getState()).toMatchObject({ status: 'monitoring', source: 'demo' });
+    expect(store.getState()).toMatchObject({ status: 'calibrating', source: 'demo' });
     expect(startCaptureSpy).not.toHaveBeenCalled();
+    expect(demo.spies.startAmbience).toHaveBeenCalledWith(
+      `http://localhost/${DEMO_AMBIENCE.file}`,
+      DEMO_AMBIENCE.gainDb,
+    );
 
+    client.emit('calibration', { progress: 1, done: true });
     const sample = DEMO_SAMPLES[0];
     if (!sample) throw new Error('aucun échantillon');
     client.spies.reset.mockClear();
@@ -145,35 +182,43 @@ describe('appStore', () => {
     expect(store.getState().lastSample).toEqual({ id: sample.id, startedAt: 100 });
   });
 
-  it('ignore la lecture d’un échantillon hors du mode démonstration', async () => {
-    const mic = fakeSession('mic');
-    const { store } = makeStore({ startCapture: () => Promise.resolve(mic.session) });
+  it('recalibre à la demande en remettant les mesures à zéro', async () => {
+    const { store, client } = makeStore();
     await store.getState().requestCapture();
-    await store.getState().playSample('alarm-smoke');
-    expect(store.getState().lastSample).toBeNull();
+    client.emit('calibration', { progress: 1, done: true });
+    client.emit('anomaly', anomaly(0.9, true));
+    store.getState().recalibrate();
+    expect(store.getState()).toMatchObject({ status: 'calibrating', alerts: 0, anomaly: null });
+    expect(client.spies.calibrate).toHaveBeenCalledTimes(2);
   });
 
-  it('ignore une deuxième demande pendant l’écoute', async () => {
-    const start = vi.fn(() => Promise.resolve(fakeSession('mic').session));
-    const { store } = makeStore({ startCapture: start });
+  it('change de classifieur et signale un échec', async () => {
+    const { store, client } = makeStore();
     await store.getState().requestCapture();
-    await store.getState().requestCapture();
-    expect(start).toHaveBeenCalledTimes(1);
+    await store.getState().setClassifier('cnn');
+    expect(client.spies.setClassifier).toHaveBeenCalledWith('cnn');
+    expect(store.getState().classifier).toEqual({ kind: 'cnn', switching: false, error: null });
+
+    client.spies.setClassifier.mockResolvedValueOnce(false);
+    await store.getState().setClassifier('yamnet');
+    expect(store.getState().classifier).toMatchObject({ kind: 'cnn', error: 'yamnet' });
   });
 
-  it('met en pause, reprend et arrête la session', async () => {
+  it('met en pause pendant la calibration et y revient à la reprise', async () => {
     const mic = fakeSession('mic');
     const { store, client } = makeStore({ startCapture: () => Promise.resolve(mic.session) });
     await store.getState().requestCapture();
-
     await store.getState().pause();
-    expect(store.getState().status).toBe('paused');
-    expect(mic.spies.pause).toHaveBeenCalled();
-
+    expect(store.getState()).toMatchObject({ status: 'paused', resumeTo: 'calibrating' });
     await store.getState().resume();
-    expect(store.getState().status).toBe('monitoring');
+    expect(store.getState().status).toBe('calibrating');
     expect(client.spies.reset).toHaveBeenCalled();
+  });
 
+  it('arrête la session et coupe le flux vers le worker', async () => {
+    const mic = fakeSession('mic');
+    const { store, client } = makeStore({ startCapture: () => Promise.resolve(mic.session) });
+    await store.getState().requestCapture();
     await store.getState().stop();
     expect(store.getState()).toMatchObject({
       status: 'idle',
@@ -182,7 +227,6 @@ describe('appStore', () => {
       live: null,
     });
     expect(mic.spies.stop).toHaveBeenCalled();
-    // Après l'arrêt, les blocs ne vont plus au classifieur.
     client.spies.push.mockClear();
     mic.emitChunk(new Float32Array(4));
     expect(client.spies.push).not.toHaveBeenCalled();

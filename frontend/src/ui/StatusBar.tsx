@@ -8,6 +8,7 @@ interface StatusBarProps {
   status: AppStatus;
   demo: boolean;
   model: ReactNode;
+  controls?: ReactNode;
   level: ReactNode;
   onPause: () => void;
   onResume: () => void;
@@ -18,6 +19,7 @@ export function StatusBar({
   status,
   demo,
   model,
+  controls,
   level,
   onPause,
   onResume,
@@ -36,6 +38,7 @@ export function StatusBar({
         </span>
         {model}
       </p>
+      {controls}
       <div className="sg-statusbar__level">{level}</div>
       <MicIndicator paused={paused} demo={demo} />
       <div className="sg-statusbar__actions">
