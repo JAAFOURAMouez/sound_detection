@@ -54,6 +54,7 @@ export function classifyMediaError(error: unknown): CaptureErrorKind {
 export type ChunkListener = (samples: Float32Array) => void;
 
 export interface CaptureSession {
+  readonly kind: 'mic' | 'demo';
   readonly analyser: AnalyserNode;
   readonly inputSampleRate: number;
   readonly ring: RingBuffer;
@@ -63,12 +64,15 @@ export interface CaptureSession {
   stop(): Promise<void>;
 }
 
-export interface CaptureEnvironment {
-  isSecureContext: boolean;
-  mediaDevices: Pick<MediaDevices, 'getUserMedia'> | undefined;
+export interface PipelineEnvironment {
   createContext: () => AudioContext;
   createWorkletNode: (context: AudioContext) => AudioWorkletNode;
   workletUrl: string;
+}
+
+export interface CaptureEnvironment extends PipelineEnvironment {
+  isSecureContext: boolean;
+  mediaDevices: Pick<MediaDevices, 'getUserMedia'> | undefined;
 }
 
 export function browserEnvironment(): CaptureEnvironment {
@@ -91,31 +95,30 @@ export function browserEnvironment(): CaptureEnvironment {
   };
 }
 
-export async function startCapture(
-  env: CaptureEnvironment = browserEnvironment(),
-): Promise<CaptureSession> {
-  if (!env.isSecureContext) throw new CaptureError('insecure');
-  if (!env.mediaDevices?.getUserMedia) throw new CaptureError('unsupported');
+export interface Pipeline {
+  readonly context: AudioContext;
+  /** Point d'entrée : toute source (micro ou échantillon) s'y connecte. */
+  readonly input: GainNode;
+  readonly session: Omit<CaptureSession, 'kind'>;
+}
 
-  let stream: MediaStream;
-  try {
-    stream = await env.mediaDevices.getUserMedia({ audio: MIC_CONSTRAINTS, video: false });
-  } catch (error) {
-    throw new CaptureError(classifyMediaError(error), error);
-  }
-
+/**
+ * Graphe commun au micro et au mode démonstration :
+ * entrée → worklet (16 kHz → tampon circulaire) et entrée → AnalyserNode (visualisation).
+ */
+export async function buildPipeline(
+  env: PipelineEnvironment,
+  hooks: { onPause?: () => void; onResume?: () => void; onStop?: () => void } = {},
+): Promise<Pipeline> {
   const context = env.createContext();
   try {
     await context.audioWorklet.addModule(env.workletUrl);
   } catch (error) {
-    stream.getTracks().forEach((track) => {
-      track.stop();
-    });
     await context.close();
     throw new CaptureError('unsupported', error);
   }
 
-  const source = context.createMediaStreamSource(stream);
+  const input = context.createGain();
   const worklet = env.createWorkletNode(context);
   const analyser = context.createAnalyser();
   analyser.fftSize = VIZ_FFT_SIZE;
@@ -124,8 +127,8 @@ export async function startCapture(
   // Gain nul vers la sortie : garantit que le graphe est « tiré » sans rien jouer.
   const sink = context.createGain();
   sink.gain.value = 0;
-  source.connect(worklet);
-  source.connect(analyser);
+  input.connect(worklet);
+  input.connect(analyser);
   worklet.connect(sink);
   analyser.connect(sink);
   sink.connect(context.destination);
@@ -142,46 +145,87 @@ export async function startCapture(
 
   if (context.state === 'suspended') await context.resume();
 
+  let stopped = false;
+  return {
+    context,
+    input,
+    session: {
+      analyser,
+      inputSampleRate: context.sampleRate,
+      ring,
+      onChunk(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      async pause() {
+        if (stopped) return;
+        hooks.onPause?.();
+        await context.suspend();
+      },
+      async resume() {
+        if (stopped) return;
+        hooks.onResume?.();
+        const reset: MainToWorklet = { type: 'reset' };
+        worklet.port.postMessage(reset);
+        await context.resume();
+      },
+      async stop() {
+        if (stopped) return;
+        stopped = true;
+        listeners.clear();
+        worklet.port.onmessage = null;
+        hooks.onStop?.();
+        input.disconnect();
+        worklet.disconnect();
+        analyser.disconnect();
+        sink.disconnect();
+        await context.close();
+      },
+    },
+  };
+}
+
+export async function startCapture(
+  env: CaptureEnvironment = browserEnvironment(),
+): Promise<CaptureSession> {
+  if (!env.isSecureContext) throw new CaptureError('insecure');
+  if (!env.mediaDevices?.getUserMedia) throw new CaptureError('unsupported');
+
+  let stream: MediaStream;
+  try {
+    stream = await env.mediaDevices.getUserMedia({ audio: MIC_CONSTRAINTS, video: false });
+  } catch (error) {
+    throw new CaptureError(classifyMediaError(error), error);
+  }
+
   const setTracksEnabled = (enabled: boolean) => {
     stream.getAudioTracks().forEach((track) => {
       track.enabled = enabled;
     });
   };
-
-  let stopped = false;
-  return {
-    analyser,
-    inputSampleRate: context.sampleRate,
-    ring,
-    onChunk(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-    async pause() {
-      if (stopped) return;
-      setTracksEnabled(false);
-      await context.suspend();
-    },
-    async resume() {
-      if (stopped) return;
-      setTracksEnabled(true);
-      const reset: MainToWorklet = { type: 'reset' };
-      worklet.port.postMessage(reset);
-      await context.resume();
-    },
-    async stop() {
-      if (stopped) return;
-      stopped = true;
-      listeners.clear();
-      worklet.port.onmessage = null;
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
-      source.disconnect();
-      worklet.disconnect();
-      analyser.disconnect();
-      sink.disconnect();
-      await context.close();
-    },
+  const stopTracks = () => {
+    stream.getTracks().forEach((track) => {
+      track.stop();
+    });
   };
+
+  let pipeline: Pipeline;
+  try {
+    pipeline = await buildPipeline(env, {
+      onPause: () => {
+        setTracksEnabled(false);
+      },
+      onResume: () => {
+        setTracksEnabled(true);
+      },
+      onStop: stopTracks,
+    });
+  } catch (error) {
+    stopTracks();
+    throw error;
+  }
+
+  const source = pipeline.context.createMediaStreamSource(stream);
+  source.connect(pipeline.input);
+  return { kind: 'mic', ...pipeline.session };
 }

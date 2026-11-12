@@ -9,6 +9,7 @@ function fakeSession() {
     stop: vi.fn(() => Promise.resolve()),
   };
   const session: CaptureSession = {
+    kind: 'mic',
     analyser: {} as AnalyserNode,
     inputSampleRate: 48_000,
     ring: {} as CaptureSession['ring'],
