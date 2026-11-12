@@ -1,87 +1,89 @@
-// Worker d'inférence : YAMNet (MediaPipe Audio Classifier) sur fenêtre glissante.
+// Worker d'inférence : classification (YAMNet ou CNN maison), score d'anomalie calibré, dérive.
 // Rien ici ne touche au DOM ; l'audio ne quitte pas le navigateur.
 
-import { AudioClassifier } from '@mediapipe/tasks-audio';
-import { TARGET_SAMPLE_RATE } from '../audio/config';
 import {
-  ASSETS,
+  ANOMALY_K,
+  ANOMALY_SMOOTHING,
+  type ClassifierKind,
+  CONFIDENT_FAMILY_SCORE,
   INFERENCE_HOP_SAMPLES,
   MIN_FAMILY_SCORE,
   TOP_K,
-  YAMNET_WINDOW_SAMPLES,
 } from './config';
-import { buildFamilyTable, classify, type FamiliesFile, type FamilyTable } from './families';
+import { AnalysisEngine, type ClassifierModel } from './engine';
 import type { MainToWorker, WorkerToMain } from './messages';
-import { fetchCached } from './modelCache';
-import { SlidingWindow } from './windowing';
+import type { CachedAsset } from './modelCache';
+import { loadAutoencoder, loadCnn, loadYamnet } from './models';
 
 const scope = self as unknown as DedicatedWorkerGlobalScope;
-
-let classifier: AudioClassifier | null = null;
-let table: FamilyTable | null = null;
-const windows = new SlidingWindow(YAMNET_WINDOW_SAMPLES, INFERENCE_HOP_SAMPLES);
 
 function post(message: WorkerToMain) {
   scope.postMessage(message);
 }
 
-function blobUrl(bytes: ArrayBuffer, type: string): string {
-  return URL.createObjectURL(new Blob([bytes], { type }));
+const engine = new AnalysisEngine(post, {
+  hop: INFERENCE_HOP_SAMPLES,
+  topK: TOP_K,
+  minFamilyScore: MIN_FAMILY_SCORE,
+  confidentScore: CONFIDENT_FAMILY_SCORE,
+  k: ANOMALY_K,
+  smoothingAlpha: ANOMALY_SMOOTHING,
+});
+
+let resolveUrl: ((path: string) => string) | null = null;
+const classifiers = new Map<ClassifierKind, Promise<ClassifierModel>>();
+const loaders = { yamnet: loadYamnet, cnn: loadCnn };
+
+function loadClassifier(kind: ClassifierKind, assets?: CachedAsset[]): Promise<ClassifierModel> {
+  const url = resolveUrl;
+  if (!url) return Promise.reject(new Error('Worker non initialisé'));
+  let pending = classifiers.get(kind);
+  if (!pending) {
+    pending = loaders[kind](url).then((loaded) => {
+      assets?.push(...loaded.assets);
+      return loaded.model;
+    });
+    classifiers.set(kind, pending);
+  }
+  return pending;
 }
 
-async function init(baseUrl: string) {
+async function init(baseUrl: string, kind: ClassifierKind) {
   const t0 = performance.now();
-  const url = (path: string) => new URL(path, baseUrl).toString();
-  const [loader, binary, model, families] = await Promise.all([
-    fetchCached(url(ASSETS.wasmLoader)),
-    fetchCached(url(ASSETS.wasmBinary)),
-    fetchCached(url(ASSETS.model)),
-    fetchCached(url(ASSETS.families)),
+  resolveUrl = (path) => new URL(path, baseUrl).toString();
+  const assets: CachedAsset[] = [];
+  const [classifier, anomaly] = await Promise.all([
+    loadClassifier(kind, assets),
+    loadAutoencoder(resolveUrl).then(
+      (loaded) => {
+        assets.push(...loaded.assets);
+        return loaded.model;
+      },
+      (error: unknown) => {
+        // L'anomalie est un plus : la classification reste utilisable sans elle.
+        post({ type: 'error', message: `Autoencodeur indisponible : ${String(error)}` });
+        return null;
+      },
+    ),
   ]);
-
-  table = buildFamilyTable(JSON.parse(new TextDecoder().decode(families.bytes)) as FamiliesFile);
-  classifier = await AudioClassifier.createFromOptions(
-    {
-      wasmLoaderPath: blobUrl(loader.bytes, 'text/javascript'),
-      wasmBinaryPath: blobUrl(binary.bytes, 'application/wasm'),
-    },
-    {
-      baseOptions: { modelAssetBuffer: new Uint8Array(model.bytes) },
-      // Toutes les classes : l'agrégation par famille a besoin du vecteur complet.
-      maxResults: -1,
-    },
-  );
-  classifier.setDefaultSampleRate(TARGET_SAMPLE_RATE);
-
+  engine.setClassifier(classifier);
+  engine.setAnomaly(anomaly);
   post({
     type: 'ready',
     loadMs: performance.now() - t0,
-    fromCache: loader.fromCache && binary.fromCache && model.fromCache && families.fromCache,
-    modelBytes: model.bytes.byteLength,
+    fromCache: assets.every((a) => a.fromCache),
+    modelBytes: assets.reduce((sum, a) => sum + a.bytes.byteLength, 0),
+    anomaly: anomaly !== null,
   });
 }
 
-function analyse(samples: Float32Array) {
-  if (!classifier || !table) return;
-  for (const window of windows.push(samples)) {
-    const t0 = performance.now();
-    const results = classifier.classify(window.samples, TARGET_SAMPLE_RATE);
-    const categories = results.at(-1)?.classifications[0]?.categories ?? [];
-    const scores = categories.map((c) => ({
-      index: c.index,
-      name: c.categoryName,
-      score: c.score,
-    }));
-    const classification = classify(scores, table, {
-      topK: TOP_K,
-      minFamilyScore: MIN_FAMILY_SCORE,
-    });
-    post({
-      type: 'result',
-      ...classification,
-      windowEndSample: window.endSample,
-      inferenceMs: performance.now() - t0,
-    });
+async function setClassifier(kind: ClassifierKind) {
+  try {
+    engine.setClassifier(await loadClassifier(kind));
+    post({ type: 'classifier', kind, ok: true });
+  } catch (error) {
+    classifiers.delete(kind);
+    post({ type: 'classifier', kind, ok: false, message: String(error) });
   }
 }
 
@@ -89,15 +91,23 @@ scope.onmessage = (event: MessageEvent<MainToWorker>) => {
   const message = event.data;
   switch (message.type) {
     case 'init':
-      init(message.baseUrl).catch((error: unknown) => {
+      init(message.baseUrl, message.classifier).catch((error: unknown) => {
         post({ type: 'error', message: error instanceof Error ? error.message : String(error) });
       });
       break;
+    case 'setClassifier':
+      void setClassifier(message.kind);
+      break;
+    case 'calibrate':
+      engine.startCalibration(message.seconds);
+      break;
     case 'audio':
-      analyse(message.samples);
+      engine.push(message.samples).catch((error: unknown) => {
+        post({ type: 'error', message: String(error) });
+      });
       break;
     case 'reset':
-      windows.reset();
+      engine.resetWindows();
       break;
   }
 };

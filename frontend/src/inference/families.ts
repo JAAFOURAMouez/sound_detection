@@ -79,6 +79,12 @@ export interface ClassifyOptions {
   minFamilyScore?: number;
   /** Au-dessus, une famille est « confiante » : on retient alors la plus grave. */
   confidentScore?: number;
+  /**
+   * Scores de classe ignorés dans l'agrégation : sans ce plancher, les dizaines de petits scores
+   * d'une grande famille (65 classes « animal », 145 « musique ») s'additionnent par le « ou »
+   * probabiliste et font passer une ambiance calme pour un animal.
+   */
+  minClassScore?: number;
 }
 
 /**
@@ -92,7 +98,12 @@ export interface ClassifyOptions {
 export function classify(
   scores: readonly ClassScore[],
   table: FamilyTable,
-  { topK = 3, minFamilyScore = 0.15, confidentScore = 0.5 }: ClassifyOptions = {},
+  {
+    topK = 3,
+    minFamilyScore = 0.15,
+    confidentScore = 0.5,
+    minClassScore = 0.1,
+  }: ClassifyOptions = {},
 ): Classification {
   const top = [...scores]
     .sort((a, b) => b.score - a.score)
@@ -102,8 +113,8 @@ export function classify(
   const complement = new Map<string, number>();
   for (const { index, score } of scores) {
     const family = table.familyOf(index);
-    if (family === OTHER_FAMILY) continue;
-    const s = Math.min(1, Math.max(0, score));
+    if (family === OTHER_FAMILY || score < minClassScore) continue;
+    const s = Math.min(1, score);
     complement.set(family, (complement.get(family) ?? 1) * (1 - s));
   }
 

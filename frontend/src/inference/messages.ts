@@ -1,24 +1,30 @@
 // Contrat de messages entre le thread principal et le worker d'inférence.
 
-import type { Classification } from './families';
+import type { ClassifierKind } from './config';
+import type { EngineEvent } from './engine';
 
 export type MainToWorker =
-  { type: 'init'; baseUrl: string } | { type: 'audio'; samples: Float32Array } | { type: 'reset' };
+  | { type: 'init'; baseUrl: string; classifier: ClassifierKind }
+  | { type: 'setClassifier'; kind: ClassifierKind }
+  | { type: 'calibrate'; seconds: number }
+  | { type: 'audio'; samples: Float32Array }
+  | { type: 'reset' };
 
 export interface LoadInfo {
   loadMs: number;
-  /** Vrai si le modèle et le runtime venaient tous de la Cache API. */
+  /** Vrai si tous les fichiers venaient de la Cache API. */
   fromCache: boolean;
   modelBytes: number;
-}
-
-export interface InferenceResult extends Classification {
-  /** Indice (à 16 kHz, depuis le début du flux) de la fin de la fenêtre analysée. */
-  windowEndSample: number;
-  inferenceMs: number;
+  /** Faux si l'autoencodeur n'a pas pu être chargé (classification seule). */
+  anomaly: boolean;
 }
 
 export type WorkerToMain =
   | ({ type: 'ready' } & LoadInfo)
   | { type: 'error'; message: string }
-  | ({ type: 'result' } & InferenceResult);
+  | { type: 'classifier'; kind: ClassifierKind; ok: boolean; message?: string }
+  | EngineEvent;
+
+export type InferenceResult = Omit<Extract<EngineEvent, { type: 'result' }>, 'type'>;
+export type AnomalyResult = Omit<Extract<EngineEvent, { type: 'anomaly' }>, 'type'>;
+export type DriftResult = Omit<Extract<EngineEvent, { type: 'drift' }>, 'type'>;

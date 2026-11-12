@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "model": "classifier",
+  "description": "Classes ESC-50 du classifieur maison regroupées dans les mêmes familles que YAMNet (families.json). Les classes absentes appartiennent à « other ».",
+  "families": {
+    "smoke_fire": {
+      "severity": 3
+    },
+    "explosion": {
+      "severity": 3
+    },
+    "voice_distress": {
+      "severity": 3
+    },
+    "alarm": {
+      "severity": 2
+    },
+    "glass": {
+      "severity": 2
+    },
+    "impact": {
+      "severity": 2
+    },
+    "mechanical": {
+      "severity": 1
+    },
+    "bell_phone": {
+      "severity": 1
+    },
+    "water": {
+      "severity": 1
+    },
+    "voice": {
+      "severity": 0
+    },
+    "music": {
+      "severity": 0
+    },
+    "animal": {
+      "severity": 0
+    },
+    "ambient": {
+      "severity": 0
+    },
+    "other": {
+      "severity": 0
+    }
+  },
+  "classes": {
+    "0": {
+      "family": "animal",
+      "name": "dog"
+    },
+    "1": {
+      "family": "animal",
+      "name": "rooster"
+    },
+    "2": {
+      "family": "animal",
+      "name": "pig"
+    },
+    "3": {
+      "family": "animal",
+      "name": "cow"
+    },
+    "4": {
+      "family": "animal",
+      "name": "frog"
+    },
+    "5": {
+      "family": "animal",
+      "name": "cat"
+    },
+    "6": {
+      "family": "animal",
+      "name": "hen"
+    },
+    "7": {
+      "family": "animal",
+      "name": "insects"
+    },
+    "8": {
+      "family": "animal",
+      "name": "sheep"
+    },
+    "9": {
+      "family": "animal",
+      "name": "crow"
+    },
+    "10": {
+      "family": "ambient",
+      "name": "rain"
+    },
+    "11": {
+      "family": "ambient",
+      "name": "sea_waves"
+    },
+    "13": {
+      "family": "animal",
+      "name": "crickets"
+    },
+    "14": {
+      "family": "animal",
+      "name": "chirping_birds"
+    },
+    "15": {
+      "family": "water",
+      "name": "water_drops"
+    },
+    "16": {
+      "family": "ambient",
+      "name": "wind"
+    },
+    "17": {
+      "family": "water",
+      "name": "pouring_water"
+    },
+    "18": {
+      "family": "water",
+      "name": "toilet_flush"
+    },
+    "19": {
+      "family": "ambient",
+      "name": "thunderstorm"
+    },
+    "20": {
+      "family": "voice_distress",
+      "name": "crying_baby"
+    },
+    "26": {
+      "family": "voice",
+      "name": "laughing"
+    },
+    "30": {
+      "family": "impact",
+      "name": "door_wood_knock"
+    },
+    "35": {
+      "family": "mechanical",
+      "name": "washing_machine"
+    },
+    "36": {
+      "family": "mechanical",
+      "name": "vacuum_cleaner"
+    },
+    "37": {
+      "family": "alarm",
+      "name": "clock_alarm"
+    },
+    "39": {
+      "family": "glass",
+      "name": "glass_breaking"
+    },
+    "40": {
+      "family": "mechanical",
+      "name": "helicopter"
+    },
+    "41": {
+      "family": "mechanical",
+      "name": "chainsaw"
+    },
+    "42": {
+      "family": "alarm",
+      "name": "siren"
+    },
+    "44": {
+      "family": "mechanical",
+      "name": "engine"
+    },
+    "48": {
+      "family": "impact",
+      "name": "fireworks"
+    },
+    "49": {
+      "family": "mechanical",
+      "name": "hand_saw"
+    }
+  }
+}

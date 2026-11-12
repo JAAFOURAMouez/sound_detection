@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import esc50FamiliesJson from '../../public/models/families-esc50.json';
 import familiesJson from '../../public/models/families.json';
+import labelsJson from '../../public/models/labels.json';
 import classMapCsv from '../../public/models/yamnet_class_map.csv?raw';
 import { buildFamilyTable, classify, type FamiliesFile, OTHER_FAMILY } from './families';
 
@@ -39,6 +41,20 @@ describe('families.json', () => {
   it('range les classes non listées dans « other »', () => {
     const table = buildFamilyTable(file);
     expect(table.familyOf(9_999)).toBe(OTHER_FAMILY);
+  });
+});
+
+describe('families-esc50.json', () => {
+  it('suit les étiquettes du CNN maison et les familles de YAMNet', () => {
+    const esc50: FamiliesFile = esc50FamiliesJson;
+    for (const [index, { name }] of Object.entries(esc50.classes)) {
+      expect(labelsJson.labels[Number(index)]).toBe(name);
+    }
+    expect(Object.keys(esc50.families)).toEqual(Object.keys(file.families));
+    const table = buildFamilyTable(esc50);
+    expect(table.familyOf(labelsJson.labels.indexOf('glass_breaking'))).toBe('glass');
+    expect(table.familyOf(labelsJson.labels.indexOf('siren'))).toBe('alarm');
+    expect(table.familyOf(labelsJson.labels.indexOf('crying_baby'))).toBe('voice_distress');
   });
 });
 
@@ -107,6 +123,28 @@ describe('classify', () => {
     expect(result.dominant?.severity).toBe(2);
   });
 
+  it('ignore les petits scores qui s’accumuleraient dans une grande famille', () => {
+    const many = buildFamilyTable({
+      version: 1,
+      model: 'test',
+      families: { animal: { severity: 0 }, other: { severity: 0 } },
+      classes: Object.fromEntries(
+        Array.from({ length: 20 }, (_, i) => [
+          String(i),
+          { family: 'animal', name: `a${String(i)}` },
+        ]),
+      ),
+    });
+    const scores = Array.from({ length: 20 }, (_, i) => ({
+      index: i,
+      name: `a${String(i)}`,
+      score: 0.06,
+    }));
+    // Sans plancher : 1 − 0,94^20 ≈ 0,71, une « famille dominante » fabriquée par le bruit.
+    expect(classify(scores, many, { minClassScore: 0 }).dominant?.family).toBe('animal');
+    expect(classify(scores, many).dominant).toBeNull();
+  });
+
   it('privilégie la famille la plus grave parmi les familles confiantes', () => {
     const graded = buildFamilyTable({
       version: 1,
@@ -146,7 +184,8 @@ describe('classify', () => {
       ],
       table,
     );
-    expect(result.families.map((f) => f.family)).toEqual(['ambient']);
+    // « Music » est hors table (other) et « Silence » à 0,05 est sous le plancher de 0,1.
+    expect(result.families).toEqual([]);
     expect(result.dominant).toBeNull();
   });
 });
