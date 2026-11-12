@@ -80,6 +80,10 @@ test.describe('détection d’anomalies dans le navigateur', () => {
     await expect
       .poll(() => page.evaluate(() => window.__soundguard?.getState().alerts), { timeout: 15_000 })
       .toBeGreaterThan(0);
-    await expect(page.getByText(new RegExp(`^[1-9]\\d* ${fr.anomaly.alerts}$`))).toBeVisible();
+    await expect(
+      page.getByText(
+        new RegExp(`^(1 ${fr.anomaly.alertsOne}|([2-9]|\\d{2,}) ${fr.anomaly.alerts})$`),
+      ),
+    ).toBeVisible();
   });
 });

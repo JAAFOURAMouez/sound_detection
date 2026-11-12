@@ -56,6 +56,7 @@ export const fr = {
     calm: 'ambiance habituelle',
     above: 'au-dessus du seuil',
     alerts: 'alertes depuis la calibration',
+    alertsOne: 'alerte depuis la calibration',
     recalibrate: 'Recalibrer',
     unavailable: 'Détection d’anomalies indisponible (classification seule).',
     drift: 'L’ambiance a changé durablement. Recalibrer ?',

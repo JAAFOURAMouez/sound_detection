@@ -75,7 +75,7 @@ export function AnomalyGauge({
           </div>
           <p className="sg-anomaly__row sg-anomaly__meta">
             <span>
-              {alerts} {t.anomaly.alerts}
+              {alerts} {alerts === 1 ? t.anomaly.alertsOne : t.anomaly.alerts}
             </span>
             <button type="button" className="sg-button sg-button--small" onClick={onRecalibrate}>
               {t.anomaly.recalibrate}

@@ -48,6 +48,36 @@ describe('AnomalyGauge', () => {
     expect(screen.getByTestId('anomaly-score')).toHaveTextContent('0.72');
     expect(screen.getByText(fr.anomaly.above, { exact: false })).toBeInTheDocument();
     expect(screen.getByText(`2 ${fr.anomaly.alerts}`)).toBeInTheDocument();
+  });
+
+  it('accorde le compteur d’alertes au singulier', () => {
+    render(
+      <AnomalyGauge
+        status="monitoring"
+        available
+        calibration={{ progress: 1, done: true }}
+        anomaly={reading(0.6)}
+        drift={null}
+        alerts={1}
+        onRecalibrate={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(`1 ${fr.anomaly.alertsOne}`)).toBeInTheDocument();
+  });
+
+  it('recalibre à la demande', () => {
+    const onRecalibrate = vi.fn();
+    render(
+      <AnomalyGauge
+        status="monitoring"
+        available
+        calibration={{ progress: 1, done: true }}
+        anomaly={reading(0.2)}
+        drift={null}
+        alerts={0}
+        onRecalibrate={onRecalibrate}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: fr.anomaly.recalibrate }));
     expect(onRecalibrate).toHaveBeenCalledOnce();
   });
