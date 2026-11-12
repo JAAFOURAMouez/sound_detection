@@ -4,9 +4,9 @@ import { App } from './App';
 import { fr } from './i18n/fr';
 
 describe('App', () => {
-  it('affiche le nom et l’état initial', () => {
+  it('commence par l’écran de consentement, sans écouter', () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: fr.app.name })).toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent(fr.app.status);
+    expect(screen.getByRole('heading', { name: fr.consent.title })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.consent.accept })).toBeEnabled();
   });
 });
