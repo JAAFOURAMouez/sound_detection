@@ -47,7 +47,6 @@
   --sg-duration-fast: 120ms;
   --sg-duration-base: 240ms;
   --sg-duration-slow: 600ms;
-  --sg-sweep-period: 4s;
 
   /* Typographie */
   --sg-font-data: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;

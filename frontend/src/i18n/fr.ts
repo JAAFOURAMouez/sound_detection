@@ -27,6 +27,23 @@ export const fr = {
     pending: 'En attente de l’autorisation du navigateur…',
     retry: 'Réessayer',
   },
+  main: {
+    radar: 'Radar acoustique',
+    radarDescription:
+      'Un tour représente la dernière minute ; la distance au centre indiquera le score d’anomalie.',
+    journal: 'Journal',
+    journalEmpty: 'Aucun événement pour l’instant.',
+    spectrogram: 'Spectrogramme mel',
+    spectrogramDescription: 'Spectrogramme défilant de 0 à 8 kHz, le plus récent à droite.',
+    level: 'Niveau',
+    transmission: 'Transmission',
+    transmissionIdle: 'Canal ouvert. L’assistant prendra la parole s’il remarque quelque chose.',
+    micActive: 'micro actif',
+    micPaused: 'micro en pause',
+    pause: 'Mettre en pause',
+    resume: 'Reprendre l’écoute',
+    stop: 'Arrêter l’écoute',
+  },
   captureError: {
     denied: {
       title: 'Accès au micro refusé',

@@ -5,6 +5,7 @@
 @import '@fontsource/ibm-plex-sans/latin-600.css';
 @import './ui/tokens.css';
 @import './ui/consent.css';
+@import './ui/main.css';
 
 /* Expose les jetons aux utilitaires Tailwind (bg-bg, text-phosphor, font-data…). */
 @theme inline {

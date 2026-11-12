@@ -1,0 +1,195 @@
+.sg-main {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  background: var(--sg-bg);
+}
+
+.sg-panel-title {
+  margin: 0;
+  padding: var(--sg-space-2) var(--sg-space-4);
+  border-bottom: var(--sg-stroke) solid var(--sg-grid);
+  font-weight: 400;
+}
+
+/* Barre d'état */
+.sg-statusbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sg-space-3) var(--sg-space-6);
+  padding: var(--sg-space-2) var(--sg-space-4);
+  border-bottom: var(--sg-stroke) solid var(--sg-grid-strong);
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-sm);
+}
+
+.sg-statusbar__brand {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sg-space-4);
+  flex: 1 1 auto;
+}
+
+.sg-statusbar__name {
+  font-weight: 600;
+  letter-spacing: var(--sg-tracking-caps);
+  text-transform: uppercase;
+}
+
+.sg-statusbar__state {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-space-2);
+  text-transform: uppercase;
+  letter-spacing: var(--sg-tracking-caps);
+  font-size: var(--sg-text-xs);
+  color: var(--sg-text-dim);
+}
+
+.sg-statusbar__state strong {
+  font-weight: 600;
+  color: var(--sg-text);
+}
+
+.sg-statusbar__state[data-status='monitoring'] .sg-glyph {
+  color: var(--sg-phosphor);
+}
+
+.sg-statusbar__level {
+  flex: 0 1 14rem;
+  min-width: 9rem;
+}
+
+.sg-statusbar__actions {
+  display: flex;
+  gap: var(--sg-space-2);
+}
+
+.sg-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: var(--sg-stroke) solid var(--sg-grid-strong);
+  border-radius: var(--sg-radius-1);
+  background: transparent;
+  color: var(--sg-text);
+  cursor: pointer;
+}
+
+.sg-icon-button:hover {
+  border-color: var(--sg-phosphor);
+  color: var(--sg-phosphor);
+}
+
+/* Indicateur micro : forme + texte, la couleur n'est qu'un renfort */
+.sg-mic {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-space-2);
+  padding: var(--sg-space-1) var(--sg-space-2);
+  border: var(--sg-stroke) solid currentColor;
+  text-transform: uppercase;
+  letter-spacing: var(--sg-tracking-caps);
+  font-size: var(--sg-text-xs);
+}
+
+.sg-mic--live {
+  color: var(--sg-phosphor);
+}
+
+.sg-mic--paused {
+  color: var(--sg-text-dim);
+  border-style: dashed;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sg-glyph--live circle:last-child {
+    animation: sg-pulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes sg-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Corps : radar + journal */
+.sg-main__body {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(16rem, 2fr);
+  min-height: 0;
+}
+
+.sg-radar {
+  margin: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  border-right: var(--sg-stroke) solid var(--sg-grid-strong);
+  min-height: 18rem;
+}
+
+.sg-radar__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+}
+
+.sg-journal {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-sm);
+}
+
+.sg-journal__empty {
+  margin: 0;
+  padding: var(--sg-space-4);
+  color: var(--sg-text-faint);
+}
+
+/* Spectrogramme pleine largeur */
+.sg-main__spectrogram {
+  border-top: var(--sg-stroke) solid var(--sg-grid-strong);
+}
+
+/* Ligne de transmission de l'assistant */
+.sg-transmission {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-space-3);
+  padding: var(--sg-space-3) var(--sg-space-4);
+  border-top: var(--sg-stroke) solid var(--sg-grid-strong);
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-sm);
+  color: var(--sg-text-dim);
+}
+
+.sg-transmission__glyph {
+  color: var(--sg-phosphor-dim);
+}
+
+.sg-transmission__text {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .sg-main__body {
+    grid-template-columns: 1fr;
+  }
+
+  .sg-radar {
+    border-right: 0;
+    border-bottom: var(--sg-stroke) solid var(--sg-grid-strong);
+  }
+
+  .sg-statusbar__level {
+    flex-basis: 100%;
+    order: 3;
+  }
+}
