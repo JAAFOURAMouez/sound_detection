@@ -127,11 +127,13 @@ def embedding_distance(embeddings: np.ndarray, mean: np.ndarray, var: np.ndarray
     return np.mean((embeddings - mean) ** 2 / var, axis=1)
 
 
-def robust_z(values: np.ndarray, reference: np.ndarray) -> np.ndarray:
-    """(x − médiane) / MAD de la référence : même normalisation que la calibration du navigateur."""
-    median = np.median(reference)
-    mad = np.median(np.abs(reference - median)) + 1e-9
-    return (values - median) / mad
+def robust_z(values: np.ndarray, reference: np.ndarray, mad_floor: float = 0.05) -> np.ndarray:
+    """(log x − médiane) / MAD de la référence, sur le logarithme : même calcul que la calibration
+    du navigateur (frontend/src/inference/calibration.ts)."""
+    log_ref = np.log(np.maximum(reference, 0) + 1e-9)
+    median = np.median(log_ref)
+    mad = max(float(np.median(np.abs(log_ref - median))), mad_floor)
+    return (np.log(np.maximum(values, 0) + 1e-9) - median) / mad
 
 
 def clip_max(window_scores: np.ndarray, window_rows: np.ndarray, rows: np.ndarray) -> np.ndarray:

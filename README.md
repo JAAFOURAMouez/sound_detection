@@ -59,13 +59,20 @@ La configuration d'exemple se trouve dans `.env.example`.
 | YAMNet + régression logistique (référence) | 81,2 ± 1,9 % | 81,3 ± 1,9 % | — | 4,1 Mo |
 
 Détection d'anomalies (autoencodeur, 1,4 Mo) : 8 classes jamais vues à l'entraînement contre
-42 classes « ordinaires ». AUC-ROC par clip : **0,698 ± 0,02** avec la règle du navigateur (le plus
-grand des deux scores normalisés : erreur de reconstruction et distance des embeddings à la ligne
-de base), contre 0,683 pour la distance seule et 0,605 pour la reconstruction seule. C'est un
-résultat modeste, sur un protocole plus difficile que l'usage réel (la « normalité » y couvre
-42 classes très différentes, au lieu de l'ambiance d'une seule pièce).
+42 classes « ordinaires ». AUC-ROC par fenêtre de 1 s (le cas du navigateur) : **0,627** avec la
+règle du navigateur (le plus grand des deux scores normalisés, sur leur logarithme : erreur de
+reconstruction et distance des embeddings à la ligne de base), contre 0,578 pour la distance seule
+et 0,520 pour la reconstruction seule ; par clip : 0,671 ± 0,018. C'est un résultat modeste,
+sur un protocole plus difficile que l'usage réel (la « normalité » y couvre 42 classes très
+différentes, au lieu de l'ambiance d'une seule pièce).
 
-Parité PyTorch / ONNX Runtime sur des fenêtres réelles : écart maximal 3,8 × 10⁻⁶ (tolérance 10⁻³).
+Dans le navigateur, sur une ambiance calme réelle calibrée pendant 60 s (salle d'étude, 11,9 min
+surveillées) : **0 fausse alerte** ; un bris de verre injecté 10 dB au-dessus de l'ambiance déclenche
+une alerte en 1 s, mais avec une marge très faible (score lissé 0,503 pour un seuil de 0,5, contre
+0,497 au maximum sur l'ambiance seule). Un choc sourd au même niveau n'est pas détecté.
+
+Parité PyTorch / ONNX Runtime (Python) / ONNX Runtime Web sur les mêmes fenêtres réelles : écart
+maximal 4,3 × 10⁻⁶ (tolérance 10⁻³).
 
 ## Documents
 

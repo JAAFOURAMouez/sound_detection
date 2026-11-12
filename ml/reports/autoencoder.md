@@ -1,6 +1,6 @@
 # Autoencodeur — détection d'anomalies sur ESC-50
 
-Révision `5d0f485` · 80 époques · 70,793 paramètres · goulot de 32 canaux.
+Révision `43799bf` · 80 époques · 70,793 paramètres · goulot de 32 canaux.
 
 Protocole : l'autoencodeur n'apprend que des classes « ordinaires » ; les classes ci-dessous
 ne sont jamais vues à l'entraînement et jouent le rôle d'anomalies. Chaque pli officiel sert
@@ -22,31 +22,31 @@ Classes anomalies : glass_breaking, siren, crying_baby, door_wood_knock, chainsa
 |---|---|---|---|
 | reconstruction | 0.605 ± 0.022 | 0.095 ± 0.027 | 0.520 ± 0.016 |
 | embedding | 0.683 ± 0.018 | 0.119 ± 0.039 | 0.578 ± 0.020 |
-| **combiné (max)** | **0.698 ± 0.019** | **0.104 ± 0.036** | **0.632 ± 0.014** |
-| somme | 0.627 ± 0.023 | 0.111 ± 0.033 | 0.585 ± 0.019 |
+| **combiné (max)** | **0.671 ± 0.018** | **0.095 ± 0.027** | **0.627 ± 0.015** |
+| somme | 0.610 ± 0.036 | 0.108 ± 0.027 | 0.547 ± 0.020 |
 
 ## Par pli
 
 | Pli | Reconstruction (clip) | Embedding (clip) | Combiné (clip) |
 |---|---|---|---|
-| 1 | 0.633 | 0.670 | 0.680 |
-| 2 | 0.602 | 0.666 | 0.673 |
-| 3 | 0.566 | 0.673 | 0.701 |
-| 4 | 0.612 | 0.715 | 0.726 |
-| 5 | 0.612 | 0.690 | 0.707 |
+| 1 | 0.633 | 0.670 | 0.672 |
+| 2 | 0.602 | 0.666 | 0.643 |
+| 3 | 0.566 | 0.673 | 0.660 |
+| 4 | 0.612 | 0.715 | 0.695 |
+| 5 | 0.612 | 0.690 | 0.685 |
 
 ## AUC-ROC par classe anomalie (clips, 5 plis cumulés, contre les clips normaux)
 
 | Classe | Reconstruction | Embedding | Combiné |
 |---|---|---|---|
-| crying_baby | 0.915 | 0.549 | 0.869 |
-| door_wood_knock | 0.499 | 0.824 | 0.726 |
-| glass_breaking | 0.516 | 0.825 | 0.724 |
-| siren | 0.782 | 0.619 | 0.712 |
-| can_opening | 0.592 | 0.748 | 0.693 |
-| chainsaw | 0.278 | 0.773 | 0.658 |
-| fireworks | 0.621 | 0.499 | 0.610 |
-| car_horn | 0.636 | 0.617 | 0.575 |
+| crying_baby | 0.915 | 0.549 | 0.912 |
+| siren | 0.782 | 0.619 | 0.737 |
+| can_opening | 0.592 | 0.748 | 0.656 |
+| door_wood_knock | 0.499 | 0.824 | 0.642 |
+| glass_breaking | 0.516 | 0.825 | 0.642 |
+| fireworks | 0.621 | 0.499 | 0.623 |
+| car_horn | 0.636 | 0.617 | 0.597 |
+| chainsaw | 0.278 | 0.773 | 0.550 |
 
 Une AUC de 0,5 correspond au hasard, une AUC inférieure à 0,5 à un son jugé *plus* ordinaire
 que la moyenne. Ce protocole est plus difficile que l'usage réel : la « normalité » y couvre
