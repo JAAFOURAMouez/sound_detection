@@ -18,7 +18,14 @@ function setup() {
     createAnalyser: vi.fn(() => ({ ...fakeNode(), fftSize: 0, smoothingTimeConstant: 1 })),
     createGain: vi.fn(() => (gainCount++ === 0 ? input : { ...fakeNode(), gain: { value: 1 } })),
     createBufferSource: vi.fn(() => {
-      const s = { ...fakeNode(), buffer: null, onended: null, start: vi.fn(), stop: vi.fn() };
+      const s = {
+        ...fakeNode(),
+        buffer: null,
+        onended: null,
+        loop: false,
+        start: vi.fn(),
+        stop: vi.fn(),
+      };
       sources.push(s);
       return s;
     }),
@@ -78,5 +85,22 @@ describe('startDemo', () => {
     await session.stop();
     expect(sources[0]?.stop).toHaveBeenCalled();
     expect(context.close).toHaveBeenCalled();
+  });
+});
+
+describe('ambiance de démonstration', () => {
+  it('joue le fond en boucle, une seule fois, et l’arrête avec la session', async () => {
+    const { env, sources } = setup();
+    const session = await startDemo(env);
+    await session.startAmbience('/samples/ambience.ogg');
+    await session.startAmbience('/samples/ambience.ogg');
+    expect(sources).toHaveLength(1);
+    // Le fond passe par un gain (atténuation) avant l'entrée de la chaîne.
+    expect((sources[0] as unknown as { loop: boolean }).loop).toBe(true);
+    // Un échantillon joué ensuite n'interrompt pas le fond.
+    await session.playSample('/samples/a.ogg');
+    expect(sources[0]?.stop).not.toHaveBeenCalled();
+    await session.stop();
+    expect(sources[0]?.stop).toHaveBeenCalled();
   });
 });

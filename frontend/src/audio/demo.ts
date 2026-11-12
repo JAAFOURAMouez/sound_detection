@@ -12,6 +12,8 @@ export interface DemoSession extends CaptureSession {
   readonly kind: 'demo';
   /** Joue un échantillon (en remplaçant le précédent) ; renvoie l'instant de départ (performance.now). */
   playSample(url: string): Promise<{ startedAt: number; duration: number }>;
+  /** Fond sonore en boucle (ambiance de la pièce simulée), sous les échantillons, atténué de `gainDb`. */
+  startAmbience(url: string, gainDb?: number): Promise<void>;
 }
 
 export interface DemoEnvironment extends PipelineEnvironment {
@@ -31,6 +33,7 @@ export async function startDemo(
   env: DemoEnvironment = browserDemoEnvironment(),
 ): Promise<DemoSession> {
   let current: AudioBufferSourceNode | null = null;
+  let ambience: AudioBufferSourceNode | null = null;
   const stopCurrent = () => {
     if (!current) return;
     current.onended = null;
@@ -43,23 +46,39 @@ export async function startDemo(
     current = null;
   };
 
-  const pipeline = await buildPipeline(env, { onStop: stopCurrent });
+  const stopAll = () => {
+    stopCurrent();
+    if (ambience) {
+      try {
+        ambience.stop();
+      } catch {
+        // déjà arrêté
+      }
+      ambience.disconnect();
+      ambience = null;
+    }
+  };
+
+  const pipeline = await buildPipeline(env, { onStop: stopAll });
   const { context, input } = pipeline;
   // En démonstration, on entend ce qui est analysé.
   input.connect(context.destination);
   const decoded = new Map<string, AudioBuffer>();
+  const decode = async (url: string): Promise<AudioBuffer> => {
+    const cached = decoded.get(url);
+    if (cached) return cached;
+    const response = await env.fetch(url);
+    if (!response.ok) throw new Error(`Échantillon introuvable : ${url}`);
+    const buffer = await context.decodeAudioData(await response.arrayBuffer());
+    decoded.set(url, buffer);
+    return buffer;
+  };
 
   return {
     kind: 'demo',
     ...pipeline.session,
     async playSample(url) {
-      let buffer = decoded.get(url);
-      if (!buffer) {
-        const response = await env.fetch(url);
-        if (!response.ok) throw new Error(`Échantillon introuvable : ${url}`);
-        buffer = await context.decodeAudioData(await response.arrayBuffer());
-        decoded.set(url, buffer);
-      }
+      const buffer = await decode(url);
       stopCurrent();
       if (context.state === 'suspended') await context.resume();
       const source = context.createBufferSource();
@@ -72,6 +91,19 @@ export async function startDemo(
       current = source;
       source.start();
       return { startedAt: env.now(), duration: buffer.duration };
+    },
+    async startAmbience(url, gainDb = 0) {
+      const buffer = await decode(url);
+      if (ambience) return;
+      const source = context.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+      const gain = context.createGain();
+      gain.gain.value = 10 ** (gainDb / 20);
+      source.connect(gain);
+      gain.connect(input);
+      ambience = source;
+      source.start();
     },
   };
 }

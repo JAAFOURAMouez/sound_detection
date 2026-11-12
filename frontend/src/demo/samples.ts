@@ -56,3 +56,22 @@ export const DEMO_SAMPLES: readonly DemoSample[] = [
     },
   },
 ];
+
+/** Ambiance calme jouée en boucle sous les échantillons (sert aussi à la calibration). */
+export const DEMO_AMBIENCE = {
+  id: 'ambience-quiet-room',
+  file: 'samples/ambience-quiet-room.ogg',
+  /**
+   * Atténuation à la lecture : l'enregistrement est à environ −35 dBFS ; atténué de 30 dB, il
+   * figure une pièce très calme. Mesure (e2e/classification.spec.ts, 12 lectures) : à −12 dB,
+   * l'ambiance masque déjà une partie des sons courts (verre : score 0,33 à 0,5 au lieu de 0,9 ;
+   * choc reconnu 4 fois sur 6) ; à −30 dB, les quatre sons retombent dans la bonne famille.
+   */
+  gainDb: -30,
+  credit: {
+    author: 'el mar',
+    license: 'CC BY 3.0',
+    source:
+      'https://commons.wikimedia.org/wiki/File:20121112_TU_Delft_Library,_quiet_study_room_-_general_ambience_-_SoundCloud_-_el_mar.ogg',
+  },
+} as const;
