@@ -1,0 +1,22 @@
+# Classifieur CNN sur ESC-50 (50 classes), fenêtres de 1 s, validation croisée sur les 5 plis officiels.
+seed: 42
+data:
+  window_seconds: 1.0
+  crop_hop: 1600          # pas de la grille de recadrage (0,1 s)
+  energy_floor_db: -50    # fenêtres plus faibles ignorées au tirage et à l'évaluation
+  jitter: 4000            # décalage temporel aléatoire (± 0,25 s)
+model:
+  channels: [32, 64, 128, 192]
+  dropout: 0.3
+train:
+  epochs: 120
+  steps_per_epoch: 25
+  batch_size: 64
+  lr: 0.002
+  weight_decay: 0.02
+  mixup_alpha: 0.4
+  mixup_prob: 0.6
+  noise_prob: 0.5
+  snr_db: [10, 40]
+eval:
+  window_hop: 8000        # fenêtres de 1 s tous les 0,5 s sur le clip de 5 s

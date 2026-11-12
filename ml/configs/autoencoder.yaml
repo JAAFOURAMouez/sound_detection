@@ -1,0 +1,31 @@
+# Autoencodeur convolutif : appris sur des sons « ordinaires », évalué contre des classes tenues à l'écart.
+seed: 42
+data:
+  window_seconds: 1.0
+  crop_hop: 1600
+  energy_floor_db: -50
+  jitter: 4000
+# Classes ESC-50 jamais vues à l'entraînement, considérées comme anomalies.
+anomaly_classes:
+  - glass_breaking
+  - siren
+  - crying_baby
+  - door_wood_knock
+  - chainsaw
+  - fireworks
+  - car_horn
+  - can_opening
+model:
+  channels: [16, 32, 64]
+  bottleneck: 32
+train:
+  epochs: 80
+  steps_per_epoch: 25
+  batch_size: 64
+  lr: 0.002
+  weight_decay: 0.0001
+  noise_prob: 0.3
+  snr_db: [20, 40]
+eval:
+  window_hop: 8000
+  max_fpr: 0.1
