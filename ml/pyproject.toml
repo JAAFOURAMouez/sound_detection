@@ -2,20 +2,52 @@
 name = "soundguard-ml"
 version = "0.0.0"
 description = "Entraînement, évaluation et export ONNX des modèles SoundGuard"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "numpy>=2.0",
+    "pyyaml==6.0.3",
+    "onnx==1.23.2",
+    "onnxruntime==1.31.1",
+    "onnxscript==0.7.2",
 ]
 
 [project.optional-dependencies]
-# Installé à partir de la phase 3 : uv sync --extra train
-train = []
+# Données, entraînement et évaluation (local ou Colab).
+train = [
+    "librosa==1.0.0",
+    "soundfile==0.14.0",
+    "scikit-learn==1.9.1",
+    "matplotlib==3.11.2",
+    "ai-edge-litert==2.3.0",
+]
+# Choix de la variante de torch : `uv sync --extra cpu` (CI) ou `uv sync --extra cuda` (GPU local).
+cpu = ["torch==2.15.0"]
+cuda = ["torch==2.15.0"]
 
 [dependency-groups]
 dev = [
     "pytest==9.2.0",
     "ruff==0.17.4",
 ]
+
+[tool.uv]
+conflicts = [[{ extra = "cpu" }, { extra = "cuda" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu132", extra = "cuda" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu132"
+url = "https://download.pytorch.org/whl/cu132"
+explicit = true
 
 [build-system]
 requires = ["hatchling"]
@@ -26,10 +58,14 @@ packages = ["soundguard_ml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "data: nécessite le jeu ESC-50 téléchargé (ignoré sinon)",
+    "artifacts: nécessite les modèles exportés dans frontend/public/models",
+]
 
 [tool.ruff]
-line-length = 100
-target-version = "py311"
+line-length = 110
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "NPY"]
