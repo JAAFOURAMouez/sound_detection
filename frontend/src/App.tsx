@@ -62,6 +62,11 @@ export function App() {
     };
   }, [load, setView]);
 
+  // Les sessions créées depuis le chargement (et leur courbe) apparaissent dans l'historique.
+  useEffect(() => {
+    if (view === 'history') void load();
+  }, [view, load]);
+
   const changeView = useCallback((next: View) => {
     window.location.hash = next === 'history' ? 'historique' : '';
   }, []);

@@ -61,8 +61,8 @@
 }
 
 .sg-statusbar__level {
-  flex: 0 1 14rem;
-  min-width: 9rem;
+  flex: 0 1 11rem;
+  min-width: 8rem;
 }
 
 .sg-statusbar__actions {
@@ -666,6 +666,8 @@
 
 /* Fiche d'événement */
 .sg-sheet {
+  /* La remise à zéro de Tailwind retire le centrage natif de <dialog>. */
+  margin: auto;
   width: min(34rem, calc(100vw - 2rem));
   max-height: calc(100vh - 2rem);
   padding: 0;
