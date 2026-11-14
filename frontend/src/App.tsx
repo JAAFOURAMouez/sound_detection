@@ -165,6 +165,7 @@ export function App() {
     <>
       <MainScreen
         status={status}
+        dialogue={dialog.phase !== 'idle'}
         demo={demo}
         model={<ModelStatus model={model} />}
         level={<LevelMeter analyser={analyser} running={running} />}

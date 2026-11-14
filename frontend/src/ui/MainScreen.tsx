@@ -4,6 +4,7 @@ import type { AppStatus } from '../state/appStore';
 import { Journal } from './Journal';
 import { Radar } from './Radar';
 import { StatusBar } from './StatusBar';
+import { displayStatus } from './displayStatus';
 import { initialDialog } from '../assistant/machine';
 import { TransmissionLine } from './TransmissionLine';
 
@@ -19,6 +20,8 @@ const IDLE_TRANSMISSION = {
 
 interface MainScreenProps {
   status: AppStatus;
+  /** L'assistant parle ou attend une réponse. */
+  dialogue?: boolean;
   demo: boolean;
   model: ReactNode;
   level: ReactNode;
@@ -38,6 +41,7 @@ interface MainScreenProps {
 
 export function MainScreen({
   status,
+  dialogue = false,
   demo,
   model,
   level,
@@ -55,9 +59,10 @@ export function MainScreen({
   onStop,
 }: MainScreenProps) {
   return (
-    <div className="sg-main" data-status={status}>
+    <div className="sg-main" data-status={displayStatus(status, dialogue)}>
       <StatusBar
         status={status}
+        dialogue={dialogue}
         demo={demo}
         model={model}
         controls={controls}

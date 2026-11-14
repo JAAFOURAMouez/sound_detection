@@ -10,6 +10,7 @@ export const fr = {
     consent: 'autorisation',
     calibrating: 'calibration',
     monitoring: 'écoute',
+    dialogue: 'dialogue',
     paused: 'pause',
     error: 'micro indisponible',
   },

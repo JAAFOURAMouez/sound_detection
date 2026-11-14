@@ -56,8 +56,38 @@
   color: var(--sg-text);
 }
 
-.sg-statusbar__state[data-status='monitoring'] .sg-glyph {
+.sg-statusbar__state[data-status='monitoring'] .sg-glyph,
+.sg-statusbar__state[data-status='calibrating'] .sg-glyph,
+.sg-statusbar__state[data-status='dialogue'] .sg-glyph {
   color: var(--sg-phosphor);
+}
+
+/* Grand écran : la barre d'état tient sur une ligne, le vumètre cède la place. */
+@media (min-width: 64rem) {
+  .sg-statusbar {
+    flex-wrap: nowrap;
+    gap: var(--sg-space-4);
+  }
+
+  .sg-statusbar__brand {
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .sg-statusbar__level {
+    flex: 1 1 6rem;
+    min-width: 5rem;
+  }
+
+  .sg-statusbar > * {
+    flex-shrink: 0;
+  }
+
+  .sg-statusbar > .sg-statusbar__brand,
+  .sg-statusbar > .sg-statusbar__level {
+    flex-shrink: 1;
+  }
 }
 
 .sg-statusbar__level {
@@ -115,8 +145,29 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .sg-glyph--live circle:last-child {
+  .sg-glyph--live circle:last-child,
+  .sg-glyph--calibrating path {
     animation: sg-pulse 2s ease-in-out infinite;
+  }
+
+  .sg-glyph--dialogue rect {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sg-speak 0.9s ease-in-out infinite alternate;
+  }
+
+  .sg-glyph--dialogue rect:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+
+  .sg-glyph--dialogue rect:nth-child(3) {
+    animation-delay: -0.6s;
+  }
+}
+
+@keyframes sg-speak {
+  to {
+    transform: scaleY(0.4);
   }
 }
 

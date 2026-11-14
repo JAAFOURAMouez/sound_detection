@@ -2,10 +2,13 @@ import type { ReactNode } from 'react';
 import { t } from '../i18n';
 import type { AppStatus } from '../state/appStore';
 import { MicIndicator } from './MicIndicator';
+import { displayStatus } from './displayStatus';
 import { StatusGlyph } from './StatusGlyph';
 
 interface StatusBarProps {
   status: AppStatus;
+  /** L'assistant parle ou attend une réponse. */
+  dialogue?: boolean;
   demo: boolean;
   model: ReactNode;
   controls?: ReactNode;
@@ -17,6 +20,7 @@ interface StatusBarProps {
 
 export function StatusBar({
   status,
+  dialogue = false,
   demo,
   model,
   controls,
@@ -26,14 +30,15 @@ export function StatusBar({
   onStop,
 }: StatusBarProps) {
   const paused = status === 'paused';
+  const shown = displayStatus(status, dialogue);
   return (
     <header className="sg-statusbar">
       <p className="sg-statusbar__brand">
         <span className="sg-statusbar__name">{t.app.name}</span>
-        <span className="sg-statusbar__state" data-status={status}>
-          <StatusGlyph status={status} />
+        <span className="sg-statusbar__state" data-status={shown}>
+          <StatusGlyph status={shown} />
           <span>
-            {t.status.label} : <strong>{t.status[status]}</strong>
+            {t.status.label} : <strong>{t.status[shown]}</strong>
           </span>
         </span>
         {model}
