@@ -27,6 +27,8 @@ export function useCanvasLoop(
   draw: (frame: CanvasFrame) => void,
   active: boolean,
   onResize?: (frame: Omit<CanvasFrame, 'time' | 'dt'>) => void,
+  /** Change de valeur → redessin (dessins statiques dont les données évoluent). */
+  redrawKey?: unknown,
 ): void {
   const drawRef = useRef(draw);
   const resizeRef = useRef(onResize);
@@ -72,5 +74,5 @@ export function useCanvasLoop(
       cancelAnimationFrame(raf);
       observer?.disconnect();
     };
-  }, [canvasRef, active]);
+  }, [canvasRef, active, redrawKey]);
 }

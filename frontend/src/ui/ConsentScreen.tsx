@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { CaptureErrorKind } from '../audio/capture';
 import { t } from '../i18n';
 
@@ -6,14 +7,22 @@ interface ConsentScreenProps {
   errorKind: CaptureErrorKind | null;
   onAccept: () => void;
   onDemo: () => void;
+  nav?: ReactNode;
 }
 
-export function ConsentScreen({ pending, errorKind, onAccept, onDemo }: ConsentScreenProps) {
+export function ConsentScreen({
+  pending,
+  errorKind,
+  onAccept,
+  onDemo,
+  nav = null,
+}: ConsentScreenProps) {
   const error = errorKind ? t.captureError[errorKind] : null;
 
   return (
     <main className="sg-consent">
       <section className="sg-consent__panel" aria-labelledby="consent-title">
+        {nav}
         <p className="sg-label">
           {t.app.name} ▪ {t.app.tagline}
         </p>
