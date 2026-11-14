@@ -927,3 +927,99 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Ligne de transmission de l'assistant */
+.sg-transmission {
+  display: grid;
+  gap: var(--sg-space-2);
+  align-items: stretch;
+}
+
+.sg-transmission__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-space-3);
+  min-height: 1.75rem;
+}
+
+.sg-transmission[data-phase='speaking'] .sg-transmission__glyph,
+.sg-transmission[data-phase='listening'] .sg-transmission__glyph {
+  color: var(--sg-phosphor);
+}
+
+.sg-transmission__wave {
+  flex: 0 0 7rem;
+  width: 7rem;
+  height: 1.75rem;
+}
+
+.sg-transmission[data-phase='idle'] .sg-transmission__text {
+  color: var(--sg-text-dim);
+}
+
+.sg-transmission:not([data-phase='idle']) .sg-transmission__text {
+  color: var(--sg-text);
+}
+
+.sg-transmission__recommendation {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sg-space-2);
+  align-items: baseline;
+  color: var(--sg-text);
+}
+
+.sg-transmission__recommendation[data-severity='verification'] .sg-transmission__marks {
+  color: var(--sg-severity-2);
+}
+
+.sg-transmission__recommendation[data-severity='alerte'] .sg-transmission__marks {
+  color: var(--sg-severity-3);
+}
+
+.sg-transmission__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sg-space-2) var(--sg-space-4);
+  align-items: center;
+}
+
+.sg-transmission__quick,
+.sg-transmission__form,
+.sg-transmission__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sg-space-2);
+  align-items: center;
+}
+
+.sg-transmission__form {
+  flex: 1 1 18rem;
+}
+
+.sg-transmission__form input {
+  flex: 1 1 10rem;
+  min-width: 0;
+  padding: var(--sg-space-1) var(--sg-space-2);
+  border: var(--sg-stroke) solid var(--sg-grid-strong);
+  background: var(--sg-bg);
+  color: var(--sg-text);
+  font: inherit;
+}
+
+.sg-transmission__meta {
+  margin-left: auto;
+  font-size: var(--sg-text-xs);
+}
+
+.sg-transmission__backend[data-backend='offline'],
+.sg-transmission__backend[data-backend='waking'] {
+  color: var(--sg-text-dim);
+}
+
+.sg-transmission__note {
+  margin: 0;
+  color: var(--sg-text-faint);
+  font-size: var(--sg-text-xs);
+}

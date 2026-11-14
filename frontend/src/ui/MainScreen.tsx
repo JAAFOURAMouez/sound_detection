@@ -4,7 +4,18 @@ import type { AppStatus } from '../state/appStore';
 import { Journal } from './Journal';
 import { Radar } from './Radar';
 import { StatusBar } from './StatusBar';
+import { initialDialog } from '../assistant/machine';
 import { TransmissionLine } from './TransmissionLine';
+
+const IDLE_TRANSMISSION = {
+  dialog: initialDialog,
+  backend: 'unknown' as const,
+  voice: true,
+  dictation: { available: false, active: false },
+  onSubmit: () => undefined,
+  onDictate: () => undefined,
+  onVoice: () => undefined,
+};
 
 interface MainScreenProps {
   status: AppStatus;
@@ -16,6 +27,7 @@ interface MainScreenProps {
   anomaly?: ReactNode;
   controls?: ReactNode;
   calibration?: number | null;
+  transmission?: ReactNode;
   demoPicker: ReactNode;
   events?: readonly SoundEvent[];
   onSelectEvent?: (id: string) => void;
@@ -34,6 +46,7 @@ export function MainScreen({
   anomaly = null,
   controls = null,
   calibration = null,
+  transmission = null,
   demoPicker,
   events = [],
   onSelectEvent = () => undefined,
@@ -68,7 +81,7 @@ export function MainScreen({
         </div>
       </main>
       <div className="sg-main__spectrogram">{spectrogram}</div>
-      <TransmissionLine />
+      {transmission ?? <TransmissionLine {...IDLE_TRANSMISSION} />}
     </div>
   );
 }

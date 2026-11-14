@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { t } from './i18n';
 import { useAppStore } from './state/appStore';
+import { assistantStore, useAssistantStore } from './state/assistantStore';
+import { TransmissionLine } from './ui/TransmissionLine';
 import { filterEvents, historyStore, useHistoryStore, type View } from './state/historyStore';
 import { eventStore, recorder } from './state/services';
 import { EventSheet } from './ui/EventSheet';
@@ -48,6 +50,16 @@ export function App() {
   const filters = useHistoryStore((s) => s.filters);
   const selectedId = useHistoryStore((s) => s.selectedId);
   const { select, setView, setFilters, updateNote, clearAll, load } = historyStore.getState();
+  const dialog = useAssistantStore((s) => s.dialog);
+  const backend = useAssistantStore((s) => s.backend);
+  const voice = useAssistantStore((s) => s.voice);
+  const dictation = useAssistantStore((s) => s.dictation);
+  const { submit, dictate, setVoice, wake } = assistantStore.getState();
+
+  // Réveil du backend gratuit dès l'ouverture (démarrage à froid de plusieurs dizaines de secondes).
+  useEffect(() => {
+    void wake();
+  }, [wake]);
 
   // Historique : chargement au démarrage, vue synchronisée avec l'adresse (#historique).
   useEffect(() => {
@@ -180,6 +192,17 @@ export function App() {
         }
         events={sessionEvents}
         onSelectEvent={select}
+        transmission={
+          <TransmissionLine
+            dialog={dialog}
+            backend={backend}
+            voice={voice}
+            dictation={dictation}
+            onSubmit={submit}
+            onDictate={() => void dictate()}
+            onVoice={setVoice}
+          />
+        }
         calibration={status === 'calibrating' ? calibration.progress : null}
         demoPicker={
           demo ? (
