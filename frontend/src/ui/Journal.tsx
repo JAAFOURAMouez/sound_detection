@@ -42,6 +42,7 @@ export const Journal = memo(function Journal({ events, onSelect, limit = 200 }: 
                   >
                     {eventLabel(e)}
                     {!e.closed && <span className="sg-journal__open"> · {t.events.open}</span>}
+                    {e.note && <span className="sg-journal__note"> · {e.note}</span>}
                   </span>
                   <span className="sg-journal__value">
                     {value === null ? '—' : value.toFixed(2)}

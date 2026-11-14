@@ -49,6 +49,11 @@ describe('Journal', () => {
     expect(onSelect).toHaveBeenCalledWith('a');
   });
 
+  it('affiche la note de l’événement', () => {
+    render(<Journal events={[ev('a', 1_000, { note: 'le chat' })]} onSelect={vi.fn()} />);
+    expect(screen.getByRole('button')).toHaveTextContent('le chat');
+  });
+
   it('signale l’absence d’événement', () => {
     render(<Journal events={[]} onSelect={vi.fn()} />);
     expect(screen.getByText(fr.main.journalEmpty)).toBeInTheDocument();

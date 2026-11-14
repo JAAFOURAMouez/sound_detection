@@ -655,6 +655,12 @@
   text-transform: none;
 }
 
+.sg-journal__note {
+  color: var(--sg-text-dim);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
 .sg-journal__value {
   text-align: right;
   font-variant-numeric: tabular-nums;
