@@ -16,6 +16,17 @@ describe('parseIntent', () => {
     ['tais-toi', 'stop'],
     ['Est-ce que c’était dangereux ?', 'question'],
     ['oui mais pourquoi tu penses que c’est du verre et pas une assiette', 'question'],
+    ['ça vient d’où', 'question'],
+    ["C'est le chat", 'explain'],
+    ['c’était juste moi', 'explain'],
+    ['la porte a claqué', 'explain'],
+    ['mon fils a fait tomber un verre', 'explain'],
+    ["Non, c'est la porte d'entrée", 'explain'],
+    ['oui c’est le voisin qui perce', 'explain'],
+    ["j'ai fait tomber une assiette", 'explain'],
+    ['ça vient de la cuisine', 'explain'],
+    ['c’est la porte ?', 'question'],
+    ['c’est bon', 'no'],
   ])('« %s » → %s', (text, intent) => {
     expect(parseIntent(text)).toBe(intent);
   });

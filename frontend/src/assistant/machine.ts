@@ -3,7 +3,13 @@
 
 import type { SoundEvent } from '../events/types';
 import { type Intent, parseIntent } from './intent';
-import { type AssistantAnswer, eventLabelFor, LINES, openingLine } from './templates';
+import {
+  type AssistantAnswer,
+  eventLabelFor,
+  explanationAnswer,
+  LINES,
+  openingLine,
+} from './templates';
 
 export type Phase = 'idle' | 'speaking' | 'listening' | 'thinking';
 
@@ -38,6 +44,8 @@ export type DialogEffect =
   | { type: 'say'; text: string }
   | { type: 'ask'; message: string; event: SoundEvent; history: Turn[] }
   | { type: 'mark'; eventId: string; status: 'asked' | 'answered' | 'dismissed' }
+  /** L'utilisateur a donné l'origine du son : elle rejoint la note de l'événement. */
+  | { type: 'note'; eventId: string; text: string }
   | { type: 'cancelSpeech' };
 
 export const PROMPT_INTERVAL_MS = 30_000;
@@ -123,6 +131,19 @@ export function reduce(
           effects: [
             { type: 'cancelSpeech' },
             { type: 'ask', message: text, event, history: state.transcript.slice(-MAX_HISTORY) },
+          ],
+        };
+      }
+      if (intent === 'explain') {
+        const answer = explanationAnswer(event, text);
+        const line = `${answer.reply} ${answer.recommendation}`;
+        return {
+          state: say({ ...withUser, answer }, line, 'listening'),
+          effects: [
+            { type: 'cancelSpeech' },
+            { type: 'note', eventId: event.id, text },
+            { type: 'say', text: line },
+            { type: 'mark', eventId: event.id, status: 'answered' },
           ],
         };
       }

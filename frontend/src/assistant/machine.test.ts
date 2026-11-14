@@ -63,6 +63,21 @@ describe('machine à états du dialogue', () => {
     expect(run([{ type: 'timeout' }], r3.state).state.phase).toBe('idle');
   });
 
+  it('note l’origine du son donnée par l’utilisateur, sans appeler le backend', () => {
+    const r = run([
+      { type: 'event', event: event('a'), now: 0 },
+      { type: 'spoken' },
+      { type: 'user', text: 'c’est le chat' },
+    ]);
+    expect(r.effects).toContainEqual({ type: 'note', eventId: 'a', text: 'c’est le chat' });
+    expect(r.effects).toContainEqual({ type: 'mark', eventId: 'a', status: 'answered' });
+    expect(r.effects.some((e) => e.type === 'ask')).toBe(false);
+    expect(r.state.line).toContain('« c’est le chat »');
+    expect(r.state.answer?.severity).toBe('information');
+    // L'utilisateur peut encore poser une question après la fin de la phrase.
+    expect(run([{ type: 'spoken' }], r.state).state.phase).toBe('listening');
+  });
+
   it('n’interpelle pas plus d’une fois toutes les 30 s', () => {
     const first = run([
       { type: 'event', event: event('a'), now: 1_000 },

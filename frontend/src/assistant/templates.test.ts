@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackAnswer, openingLine } from './templates';
+import { appendNote, explanationAnswer, fallbackAnswer, NOTE_MAX, openingLine } from './templates';
 
 describe('gabarits de l’assistant', () => {
   it('ouvre la conversation sans réseau, en restant prudent', () => {
@@ -31,5 +31,19 @@ describe('gabarits de l’assistant', () => {
     });
     expect(unknown).toMatchObject({ severity: 'verification' });
     expect(unknown.reply).toContain('0.61');
+  });
+
+  it('ajoute l’explication à la note sans doublon ni dépassement', () => {
+    expect(appendNote('', '  le chat ')).toBe('le chat');
+    expect(appendNote('vu dans la cuisine', 'le chat')).toBe('vu dans la cuisine · le chat');
+    expect(appendNote('le chat', 'le chat')).toBe('le chat');
+    expect(appendNote('x'.repeat(NOTE_MAX), 'le chat')).toHaveLength(NOTE_MAX);
+  });
+
+  it('accuse réception de l’explication en restant prudent si le son était grave', () => {
+    expect(explanationAnswer({ severity: 1 }, 'le chat.').reply).toContain('« le chat »');
+    const serious = explanationAnswer({ severity: 3 }, 'je teste le détecteur');
+    expect(serious.severity).toBe('verification');
+    expect(serious.recommendation).toContain('vérifie');
   });
 });

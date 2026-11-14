@@ -37,6 +37,7 @@ function setup(api: Partial<AssistantApi> = {}) {
   };
   const mute = vi.fn();
   const markEvent = vi.fn();
+  const addNote = vi.fn();
   const chat = vi.fn(
     api.chat ??
       (() =>
@@ -54,6 +55,7 @@ function setup(api: Partial<AssistantApi> = {}) {
     mute,
     markEvent,
     latestEvent: () => ({ ...event, closed: true }),
+    addNote,
     now: () => 100_000,
     muteTailMs: 10,
   });
@@ -63,7 +65,7 @@ function setup(api: Partial<AssistantApi> = {}) {
       expect(store.getState().dialog.phase).not.toBe('speaking');
     });
   };
-  return { store, spoken, mute, markEvent, chat, finishSpeech };
+  return { store, spoken, mute, markEvent, chat, addNote, finishSpeech };
 }
 
 afterEach(() => {
@@ -106,6 +108,16 @@ describe('assistantStore', () => {
       expect(store.getState().dialog.answer?.fallback).toBe(true);
     });
     expect(store.getState().backend).toBe('offline');
+  });
+
+  it('enregistre l’origine du son dans la note de l’événement', async () => {
+    const { store, chat, addNote, markEvent, finishSpeech } = setup();
+    store.getState().onEvent(event);
+    await finishSpeech();
+    store.getState().submit('la porte a claqué');
+    expect(addNote).toHaveBeenCalledWith('e1', 'la porte a claqué');
+    expect(markEvent).toHaveBeenLastCalledWith('e1', 'answered');
+    expect(chat).not.toHaveBeenCalled();
   });
 
   it('réveille le backend et reflète son état', async () => {

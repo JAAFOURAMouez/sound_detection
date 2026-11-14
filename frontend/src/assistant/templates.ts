@@ -39,6 +39,36 @@ export const LINES = {
   followUp: 'Tu peux me poser une question, ou dire « non » pour arrêter.',
 };
 
+/** Longueur maximale d'une note (même limite que la fiche d'événement et l'API). */
+export const NOTE_MAX = 500;
+
+/** Ajoute l'explication de l'utilisateur à la note existante de l'événement. */
+export function appendNote(note: string, text: string): string {
+  const clean = text.trim();
+  if (!clean || note.includes(clean)) return note;
+  return (note.trim() ? `${note.trim()} · ${clean}` : clean).slice(0, NOTE_MAX);
+}
+
+/**
+ * Accusé de réception quand l'utilisateur donne l'origine du son : immédiat, sans réseau.
+ * Pour un son potentiellement dangereux, on garde une invitation à vérifier.
+ */
+export function explanationAnswer(
+  event: Pick<SoundEvent, 'severity'>,
+  explanation: string,
+): AssistantAnswer {
+  const quoted = explanation.trim().replace(/[.!\s]+$/, '');
+  return {
+    reply: `Merci, c’est noté dans le journal : « ${quoted} ».`,
+    recommendation:
+      event.severity >= 3
+        ? 'Si tu as le moindre doute, vérifie quand même sur place.'
+        : 'Je continue d’écouter et je te préviendrai si quelque chose d’autre se produit.',
+    severity: event.severity >= 3 ? 'verification' : 'information',
+    fallback: false,
+  };
+}
+
 /** Réponse construite localement (backend injoignable ou trop lent). */
 export function fallbackAnswer(
   event: Pick<SoundEvent, 'type' | 'family' | 'severity' | 'confidence' | 'scoreMax'>,

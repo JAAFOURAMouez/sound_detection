@@ -16,7 +16,7 @@ import {
   recognitionConstructor,
   type Speaker,
 } from '../assistant/speech';
-import { fallbackAnswer } from '../assistant/templates';
+import { appendNote, fallbackAnswer } from '../assistant/templates';
 import type { SoundEvent } from '../events/types';
 import { historyStore } from './historyStore';
 import { recorder } from './services';
@@ -43,6 +43,8 @@ export interface AssistantDeps {
   mute: (muted: boolean) => void;
   markEvent: (id: string, status: 'asked' | 'answered' | 'dismissed') => void;
   latestEvent: (id: string) => SoundEvent | null;
+  /** Ajoute l'explication de l'utilisateur à la note de l'événement (journal). */
+  addNote: (id: string, text: string) => void;
   now: () => number;
   /** Délai d'écoute sans réponse avant de rendre la main. */
   listenTimeoutMs?: number;
@@ -118,6 +120,9 @@ export function createAssistantStore(deps: AssistantDeps) {
         case 'mark':
           deps.markEvent(effect.eventId, effect.status);
           break;
+        case 'note':
+          deps.addNote(effect.eventId, effect.text);
+          break;
       }
     }
 
@@ -181,6 +186,11 @@ export const assistantStore = createAssistantStore({
     void historyStore.getState().setDialogStatus(id, status);
   },
   latestEvent: (id) => historyStore.getState().events.find((e) => e.id === id) ?? null,
+  addNote: (id, text) => {
+    const history = historyStore.getState();
+    const current = history.events.find((e) => e.id === id)?.note ?? '';
+    void history.updateNote(id, appendNote(current, text));
+  },
   now: () => Date.now(),
 });
 
