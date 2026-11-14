@@ -75,31 +75,69 @@
   color: var(--sg-phosphor);
 }
 
+/* Écran moyen : deux rangées voulues, les commandes vitales (vues, micro, pause, arrêt) en
+   haut, le classifieur et le vumètre en dessous. */
+@media (max-width: 79.99rem) {
+  .sg-statusbar > .sg-tabs {
+    order: 1;
+  }
+
+  .sg-statusbar > .sg-theme-toggle {
+    order: 2;
+  }
+
+  .sg-statusbar > .sg-mic {
+    order: 3;
+  }
+
+  .sg-statusbar > .sg-statusbar__actions {
+    order: 4;
+  }
+
+  .sg-statusbar > .sg-switch {
+    order: 5;
+  }
+
+  .sg-statusbar > .sg-statusbar__level {
+    order: 6;
+  }
+}
+
 /* Grand écran : la barre d'état tient sur une ligne, le vumètre cède la place. */
-@media (min-width: 64rem) {
+@media (min-width: 80rem) {
   .sg-statusbar {
     flex-wrap: nowrap;
     gap: var(--sg-space-4);
   }
 
   .sg-statusbar__brand {
-    flex: 0 1 auto;
-    min-width: 0;
+    flex: 0 0 auto;
     white-space: nowrap;
-  }
-
-  .sg-statusbar__level {
-    flex: 1 1 6rem;
-    min-width: 5rem;
   }
 
   .sg-statusbar > * {
     flex-shrink: 0;
   }
 
-  .sg-statusbar > .sg-statusbar__brand,
   .sg-statusbar > .sg-statusbar__level {
-    flex-shrink: 1;
+    flex: 1 1 6.5rem;
+    min-width: 6.5rem;
+  }
+}
+
+/* Entre les deux, les libellés évidents s'effacent visuellement (toujours lus par les lecteurs
+   d'écran ; « modèle » réapparaît dès qu'il charge ou échoue). */
+@media (min-width: 80rem) and (max-width: 90rem) {
+  .sg-model[data-model='ready'],
+  .sg-model > span,
+  .sg-statusbar .sg-switch__label,
+  .sg-statusbar .sg-level > .sg-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
@@ -492,7 +530,8 @@
 /* Vu-mètre */
 .sg-level {
   display: grid;
-  grid-template-columns: auto 1fr 4.5rem;
+  grid-template-columns: auto minmax(2rem, 1fr) auto;
+  white-space: nowrap;
   align-items: center;
   gap: var(--sg-space-2);
 }
