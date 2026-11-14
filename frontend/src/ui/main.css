@@ -43,7 +43,9 @@
 .sg-statusbar__brand {
   margin: 0;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  row-gap: var(--sg-space-1);
   gap: var(--sg-space-4);
   flex: 1 1 auto;
 }
