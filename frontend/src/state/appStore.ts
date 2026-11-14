@@ -58,8 +58,10 @@ export interface AppDeps {
   calibrationSeconds: number;
   recorder: Pick<
     EventRecorder,
-    'startSession' | 'endSession' | 'onResult' | 'onAnomaly' | 'onDrift'
+    'startSession' | 'endSession' | 'onResult' | 'onAnomaly' | 'onDrift' | 'muted'
   >;
+  /** Appelé à l'arrêt de l'écoute (fin du dialogue en cours). */
+  onStop: () => void;
 }
 
 const defaultDeps: AppDeps = {
@@ -69,6 +71,11 @@ const defaultDeps: AppDeps = {
   baseUrl: () => new URL(import.meta.env.BASE_URL, window.location.href).toString(),
   calibrationSeconds: CALIBRATION_SECONDS,
   recorder: sharedRecorder,
+  onStop: () => {
+    void import('./assistantStore').then(({ assistantStore }) => {
+      assistantStore.getState().reset();
+    });
+  },
 };
 
 function isDemo(session: CaptureSession | null): session is DemoSession {
@@ -117,7 +124,9 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
         if (done && get().status === 'paused') set({ resumeTo: 'monitoring' });
       });
       created.on('anomaly', (anomaly) => {
-        set((state) => ({ anomaly, alerts: state.alerts + (anomaly.alert ? 1 : 0) }));
+        // Pendant que l'assistant parle, ses propres paroles ne comptent pas comme alertes.
+        const counted = anomaly.alert && !deps.recorder.muted;
+        set((state) => ({ anomaly, alerts: state.alerts + (counted ? 1 : 0) }));
         deps.recorder.onAnomaly(anomaly);
       });
       created.on('drift', (drift) => {
@@ -249,6 +258,7 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
         const { session } = get();
         detach();
         deps.recorder.endSession();
+        deps.onStop();
         setClipSource(null);
         client?.reset();
         set({

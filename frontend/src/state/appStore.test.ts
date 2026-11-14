@@ -73,12 +73,14 @@ function fakeRecorder() {
     onResult: vi.fn(),
     onAnomaly: vi.fn(),
     onDrift: vi.fn(),
+    muted: false,
   };
 }
 
 function makeStore(overrides: Partial<AppDeps> = {}, c = fakeClient(), recorder = fakeRecorder()) {
   const store = createAppStore({
     recorder,
+    onStop: vi.fn(),
     createClient: () => c.client,
     baseUrl: () => 'http://localhost/',
     startCapture: () => Promise.resolve(fakeSession('mic').session),
