@@ -27,6 +27,12 @@ describe('parseIntent', () => {
     ['ça vient de la cuisine', 'explain'],
     ['c’est la porte ?', 'question'],
     ['c’est bon', 'no'],
+    ['c un chat', 'explain'],
+    ['cest mon chien', 'explain'],
+    ['chat', 'explain'],
+    ['la télé', 'explain'],
+    ['merci', 'no'],
+    ['je ne sais pas trop ce que ça pourrait être en fait', 'question'],
   ])('« %s » → %s', (text, intent) => {
     expect(parseIntent(text)).toBe(intent);
   });
@@ -37,5 +43,7 @@ describe('parseIntent', () => {
 
   it('normalise accents, apostrophes et ponctuation', () => {
     expect(normalize('  Ça SUFFIT !  Arrête’  ')).toBe('ca suffit arrete');
+    expect(normalize('C un chat')).toBe('c est un chat');
+    expect(normalize("c'est le chat")).toBe('c est le chat');
   });
 });

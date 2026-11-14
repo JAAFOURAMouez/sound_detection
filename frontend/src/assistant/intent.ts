@@ -3,14 +3,18 @@
 export type Intent = 'yes' | 'no' | 'ignore' | 'stop' | 'question' | 'explain';
 
 export function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[’']/g, ' ')
-    .replace(/[^a-z0-9 ]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[’']/g, ' ')
+      .replace(/[^a-z0-9 ]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      // Écriture SMS : « c un chat », « cest le chat » → « c est … ».
+      .replace(/\b(c|cest)\b(?! est\b)/g, 'c est')
+  );
 }
 
 const IGNORE = [
@@ -26,7 +30,7 @@ const YES = [
 ];
 const NO = [
   /^(non|nan|pas maintenant|laisse|c est rien|rien|plus tard|pas la peine|inutile|no)\b/,
-  /^(c est bon|ca va|tout va bien)$/,
+  /^(c est bon|ca va|tout va bien|merci|super|parfait|cool)$/,
 ];
 const QUESTION = [
   /^(pourquoi|comment|quand|ou|qui|quel|quelle|quels|quelles|combien|que|quoi|est ce|qu est ce)\b/,
@@ -54,5 +58,7 @@ export function parseIntent(text: string): Intent {
   if (EXPLAIN.some((r) => r.test(t))) return 'explain';
   if (NO.some((r) => r.test(t))) return 'no';
   if (YES.some((r) => r.test(t)) && t.split(' ').length <= 4) return 'yes';
+  // Réponse brève qui n'est ni oui, ni non, ni une question : « chat », « télé du voisin ».
+  if (t.split(' ').length <= 3) return 'explain';
   return 'question';
 }
