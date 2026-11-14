@@ -10,6 +10,8 @@ import { SkipLink } from './ui/SkipLink';
 import { HistoryView } from './ui/HistoryView';
 import { MicIndicator } from './ui/MicIndicator';
 import { ViewTabs } from './ui/ViewTabs';
+import { AboutView } from './ui/AboutView';
+import { VIEW_HASH, viewFromHash } from './ui/views';
 import { AnomalyGauge } from './ui/AnomalyGauge';
 import { ClassifierSwitch } from './ui/ClassifierSwitch';
 import { ConsentScreen } from './ui/ConsentScreen';
@@ -66,7 +68,7 @@ export function App() {
   useEffect(() => {
     void load();
     const fromHash = () => {
-      setView(window.location.hash === '#historique' ? 'history' : 'listen');
+      setView(viewFromHash(window.location.hash));
     };
     fromHash();
     window.addEventListener('hashchange', fromHash);
@@ -81,7 +83,7 @@ export function App() {
   }, [view, load]);
 
   const changeView = useCallback((next: View) => {
-    window.location.hash = next === 'history' ? 'historique' : '';
+    window.location.hash = VIEW_HASH[next];
   }, []);
 
   const sessionId = recorder.session;
@@ -119,17 +121,31 @@ export function App() {
     />
   );
 
+  const pageHeader = (
+    <header className="sg-statusbar">
+      <p className="sg-statusbar__brand">
+        <span className="sg-statusbar__name">{t.app.name}</span>
+      </p>
+      {tabs}
+      {sessionActive && <MicIndicator paused={status === 'paused'} demo={source === 'demo'} />}
+    </header>
+  );
+
+  if (view === 'about') {
+    return (
+      <div className="sg-main sg-main--history">
+        <SkipLink />
+        {pageHeader}
+        <AboutView />
+      </div>
+    );
+  }
+
   if (view === 'history') {
     return (
       <div className="sg-main sg-main--history">
         <SkipLink />
-        <header className="sg-statusbar">
-          <p className="sg-statusbar__brand">
-            <span className="sg-statusbar__name">{t.app.name}</span>
-          </p>
-          {tabs}
-          {sessionActive && <MicIndicator paused={status === 'paused'} demo={source === 'demo'} />}
-        </header>
+        {pageHeader}
         <HistoryView
           loaded={loaded}
           error={historyError}

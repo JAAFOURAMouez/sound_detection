@@ -9,7 +9,7 @@ import type { EventRecorder } from '../events/recorder';
 import type { EventType, SoundEvent } from '../events/types';
 import { eventStore, recorder } from './services';
 
-export type View = 'listen' | 'history';
+export type View = 'listen' | 'history' | 'about';
 
 export interface HistoryFilters {
   family: string | null;

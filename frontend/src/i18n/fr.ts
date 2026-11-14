@@ -109,6 +109,64 @@ export const fr = {
     label: 'Vues',
     listen: 'Écoute',
     history: 'Historique',
+    about: 'À propos',
+  },
+  about: {
+    title: 'À propos de SoundGuard',
+    intro:
+      'SoundGuard est un poste d’écoute acoustique : il apprend le bruit normal d’une pièce, repère les sons connus et les bruits inhabituels, puis prend la parole pour t’expliquer ce qu’il a entendu et te proposer quoi faire.',
+    chainTitle: 'Chaîne de traitement',
+    browser: 'Dans ton navigateur',
+    server: 'Sur le serveur',
+    chain: [
+      [
+        'Micro',
+        'Capture sans traitement automatique (ni annulation d’écho, ni réduction de bruit).',
+      ],
+      ['AudioWorklet', 'Rééchantillonnage à 16 kHz avec filtre anti-repliement, tampon de 10 s.'],
+      [
+        'Web Worker',
+        'YAMNet (521 classes) ou le CNN maison, et l’autoencodeur qui mesure l’écart à la ligne de base.',
+      ],
+      [
+        'Moteur d’événements',
+        'Ouvre, fusionne et ferme les événements ; historique dans IndexedDB, extraits en mémoire seulement.',
+      ],
+      ['Assistant', 'Machine à états du dialogue, synthèse vocale, réponses locales de repli.'],
+    ] as const,
+    serverStep: [
+      'API de dialogue',
+      'Reçoit uniquement des métadonnées (type de son, scores, heure) et interroge un modèle de langue.',
+    ] as const,
+    privacyTitle: 'Vie privée',
+    privacy: [
+      'L’audio brut ne quitte jamais le navigateur : toute l’analyse sonore se fait sur ton appareil.',
+      'Seules des métadonnées d’événements sont envoyées au serveur, et seulement pendant un dialogue.',
+      'L’historique reste dans ce navigateur (30 jours) ; tu peux l’exporter ou l’effacer à tout moment.',
+      'La dictée vocale est optionnelle : si tu l’utilises, le navigateur transmet ta voix à son propre service de reconnaissance.',
+    ],
+    modelsTitle: 'Modèles et mesures',
+    modelsIntro:
+      'Évaluation sur ESC-50 (2 000 clips, 50 classes), validation croisée sur les 5 plis officiels.',
+    modelsHead: ['Modèle', 'Exactitude (clip)', 'F1 macro', 'Taille'],
+    models: [
+      ['CNN maison (log-mel dans le graphe ONNX)', '82,8 ± 1,6 %', '81,8 ± 1,6 %', '4,5 Mo'],
+      ['YAMNet + régression logistique', '81,2 ± 1,9 %', '81,3 ± 1,9 %', '4,1 Mo'],
+    ] as const,
+    anomaly:
+      'Anomalies : AUC-ROC de 0,627 par fenêtre de 1 s sur 8 classes jamais vues. En conditions réelles (11,9 min d’ambiance calme), aucune fausse alerte.',
+    limitsTitle: 'Limites',
+    limits: [
+      'Ce n’est pas un dispositif de sécurité certifié : en cas de danger, appelle le 112.',
+      'La détection d’anomalies reste modeste : un bruit faible ou proche de l’ambiance peut passer inaperçu.',
+      'Les modèles maison sont entraînés sur ESC-50 (licence CC BY-NC) : usage non commercial uniquement.',
+      'La reconnaissance vocale n’existe pas dans tous les navigateurs ; la saisie au clavier reste toujours possible.',
+      'Le serveur gratuit s’endort : la première réponse peut prendre quelques dizaines de secondes, l’assistant répond localement en attendant.',
+    ],
+    licensesTitle: 'Licences',
+    licenses:
+      'YAMNet : Apache-2.0. Polices IBM Plex : SIL Open Font License. Sons de démonstration : crédits affichés en mode démonstration.',
+    source: 'Code source',
   },
   events: {
     unknown: 'inconnu',
