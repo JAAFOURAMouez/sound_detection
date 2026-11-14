@@ -85,6 +85,11 @@ export function TransmissionLine({
   const line = dialog.phase === 'idle' && !dialog.line ? t.assistant.idle : dialog.line;
   const canAnswer = dialog.phase === 'listening' || dialog.phase === 'speaking';
   const answer = dialog.answer;
+  // La recommandation a sa propre ligne : on ne la répète pas dans le texte qui s'écrit.
+  const shown =
+    answer && line.endsWith(answer.recommendation)
+      ? line.slice(0, -answer.recommendation.length).trimEnd()
+      : line;
 
   return (
     <section
@@ -101,11 +106,11 @@ export function TransmissionLine({
         </span>
         <Wave phase={dialog.phase} />
         <p className="sg-transmission__text" data-testid="assistant-line">
-          <Typewriter key={line} text={line} />
-          <span className="sg-sr-only" aria-live="polite">
-            {line}
-          </span>
+          <Typewriter key={shown} text={shown} />
         </p>
+        <span className="sg-sr-only" aria-live="polite">
+          {line}
+        </span>
         <span className="sg-sr-only" role="status">
           {t.assistant.label} : {t.assistant.phases[dialog.phase]}
         </span>

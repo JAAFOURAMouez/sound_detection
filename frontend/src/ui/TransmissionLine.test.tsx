@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { initialDialog } from '../assistant/machine';
 import { fr } from '../i18n/fr';
@@ -61,6 +61,34 @@ describe('TransmissionLine', () => {
     expect(rec).toHaveTextContent('Va voir.');
     expect(rec).toHaveTextContent(fr.assistant.severity.verification);
     expect(rec).toHaveTextContent(fr.assistant.localAnswer);
+  });
+
+  it('ne répète pas la recommandation dans la ligne qui s’écrit', () => {
+    vi.useFakeTimers();
+    render(
+      <TransmissionLine
+        {...base}
+        dialog={{
+          ...initialDialog,
+          phase: 'listening',
+          line: 'On dirait du verre. Va voir.',
+          answer: {
+            reply: 'On dirait du verre.',
+            recommendation: 'Va voir.',
+            severity: 'verification',
+            fallback: false,
+          },
+        }}
+      />,
+    );
+    act(() => {
+      vi.advanceTimersByTime(2_000);
+    });
+    vi.useRealTimers();
+    const line = screen.getByTestId('assistant-line');
+    expect(line).toHaveTextContent(/^On dirait du verre\.$/);
+    // Les lecteurs d'écran entendent la phrase complète, comme la synthèse vocale.
+    expect(screen.getByText('On dirait du verre. Va voir.')).toBeInTheDocument();
   });
 
   it('annonce la dictée et coupe la voix', () => {
