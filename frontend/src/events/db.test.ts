@@ -51,6 +51,17 @@ describe('EventStore', () => {
     expect(await reopened.listSessions()).toHaveLength(1);
   });
 
+  it('garde la note et le statut du dialogue quand le moteur met l’événement à jour', async () => {
+    const store = fresh();
+    stores.push(store);
+    await store.saveEvent(event('a', 1_000));
+    await store.updateNote('a', 'note');
+    await store.updateDialogStatus('a', 'answered');
+    await store.saveEvent({ ...event('a', 1_000), end: 5_000 });
+    const [saved] = await store.listEvents();
+    expect(saved).toMatchObject({ end: 5_000, note: 'note', dialogStatus: 'answered' });
+  });
+
   it('modifie la note d’un événement', async () => {
     const store = fresh();
     stores.push(store);

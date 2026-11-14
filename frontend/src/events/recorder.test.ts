@@ -121,3 +121,20 @@ describe('EventRecorder', () => {
     expect(changes[0]?.event.type).toBe('drift');
   });
 });
+
+describe('sourdine pendant la parole de l’assistant', () => {
+  it('ignore les trames pendant la sourdine, puis reprend', () => {
+    const { recorder, changes, advance } = setup();
+    recorder.startSession('mic', 'yamnet');
+    recorder.setMuted(true);
+    expect(recorder.muted).toBe(true);
+    for (const s of [0.9, 0.9, 0.9]) {
+      recorder.onAnomaly(anomaly(s));
+      advance(500);
+    }
+    expect(changes).toEqual([]);
+    recorder.setMuted(false);
+    recorder.onAnomaly(anomaly(0.9));
+    expect(changes.map((c) => c.kind)).toEqual(['opened']);
+  });
+});

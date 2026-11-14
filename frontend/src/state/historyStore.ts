@@ -31,6 +31,7 @@ export interface HistoryState {
   setView: (view: View) => void;
   setFilters: (filters: Partial<HistoryFilters>) => void;
   updateNote: (id: string, note: string) => Promise<void>;
+  setDialogStatus: (id: string, status: SoundEvent['dialogStatus']) => Promise<void>;
   clearAll: () => Promise<void>;
   exportJson: () => string;
   exportCsv: () => string;
@@ -50,7 +51,12 @@ export function filterEvents(events: SoundEvent[], filters: HistoryFilters): Sou
 export interface HistoryDeps {
   store: Pick<
     EventStore,
-    'listEvents' | 'listSessions' | 'updateNote' | 'clearAll' | 'purgeOlderThan'
+    | 'listEvents'
+    | 'listSessions'
+    | 'updateNote'
+    | 'updateDialogStatus'
+    | 'clearAll'
+    | 'purgeOlderThan'
   >;
   recorder: Pick<EventRecorder, 'subscribe' | 'flush' | 'clips'> | null;
   now: () => number;
@@ -91,7 +97,9 @@ export function createHistoryStore(deps: HistoryDeps) {
         const events = [...state.events];
         for (const { event } of changes) {
           const i = events.findIndex((e) => e.id === event.id);
-          if (i >= 0) events[i] = event;
+          // Le moteur ignore le statut du dialogue : on conserve celui déjà connu.
+          if (i >= 0)
+            events[i] = { ...event, dialogStatus: events[i]?.dialogStatus ?? event.dialogStatus };
           else events.push(event);
         }
         return { events };
@@ -114,6 +122,14 @@ export function createHistoryStore(deps: HistoryDeps) {
       set((state) => ({ events: state.events.map((e) => (e.id === id ? { ...e, note } : e)) }));
       await deps.recorder?.flush();
       await deps.store.updateNote(id, note);
+    },
+
+    async setDialogStatus(id, dialogStatus) {
+      set((state) => ({
+        events: state.events.map((e) => (e.id === id ? { ...e, dialogStatus } : e)),
+      }));
+      await deps.recorder?.flush();
+      await deps.store.updateDialogStatus(id, dialogStatus);
     },
 
     async clearAll() {

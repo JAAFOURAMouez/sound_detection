@@ -30,6 +30,7 @@ export class EventRecorder {
   private drift = false;
   private lastAnomalyAt = Number.NEGATIVE_INFINITY;
   private lastScoreSecond = -1;
+  private mutedFlag = false;
   private readonly listeners = new Set<ChangeListener>();
   private writes: Promise<void> = Promise.resolve();
   /** Extraits audio par événement (jamais persistés). */
@@ -39,6 +40,19 @@ export class EventRecorder {
 
   get session(): string | null {
     return this.sessionId;
+  }
+
+  /** Vrai pendant que l'assistant parle (et juste après) : la détection est suspendue. */
+  get muted(): boolean {
+    return this.mutedFlag;
+  }
+
+  /**
+   * Suspend la création d'événements pendant que la synthèse vocale parle, pour que
+   * l'assistant ne se détecte pas lui-même. Les trames reçues sont ignorées.
+   */
+  setMuted(muted: boolean): void {
+    this.mutedFlag = muted;
   }
 
   startSession(source: 'mic' | 'demo', classifier: string): string {
@@ -96,7 +110,7 @@ export class EventRecorder {
 
   private frame(score: number | null, levelDb: number | null): void {
     const sessionId = this.sessionId;
-    if (!sessionId) return;
+    if (!sessionId || this.mutedFlag) return;
     const t = this.deps.now();
     const frame: Frame = {
       t,

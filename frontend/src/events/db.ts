@@ -48,12 +48,32 @@ export class EventStore {
     await this.db.sessions.update(id, { endedAt });
   }
 
+  /**
+   * Enregistre (ou met à jour) un événement venu du moteur. Le moteur ne connaît ni la note
+   * ni le statut du dialogue : on conserve ceux déjà enregistrés.
+   */
   async saveEvent(event: SoundEvent): Promise<void> {
-    await this.db.events.put(event);
+    await this.db.transaction('rw', this.db.events, async () => {
+      const existing = await this.db.events.get(event.id);
+      await this.db.events.put(
+        existing
+          ? {
+              ...event,
+              note: event.note || existing.note,
+              dialogStatus:
+                event.dialogStatus === 'none' ? existing.dialogStatus : event.dialogStatus,
+            }
+          : event,
+      );
+    });
   }
 
   async updateNote(id: string, note: string): Promise<void> {
     await this.db.events.update(id, { note });
+  }
+
+  async updateDialogStatus(id: string, dialogStatus: SoundEvent['dialogStatus']): Promise<void> {
+    await this.db.events.update(id, { dialogStatus });
   }
 
   /** Enregistre une mesure de score (1 Hz) dans le bloc de sa minute. */

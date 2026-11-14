@@ -28,6 +28,7 @@ function setup(stored: SoundEvent[] = []) {
     listEvents: vi.fn(() => Promise.resolve(stored)),
     listSessions: vi.fn(() => Promise.resolve([])),
     updateNote: vi.fn(() => Promise.resolve()),
+    updateDialogStatus: vi.fn(() => Promise.resolve()),
     clearAll: vi.fn(() => Promise.resolve()),
     purgeOlderThan: vi.fn(() => Promise.resolve(0)),
   };
@@ -95,5 +96,16 @@ describe('historyStore', () => {
     await history.getState().load();
     expect(history.getState().exportCsv().split('\r\n')[1]).toMatch(/^a,s,/);
     expect(JSON.parse(history.getState().exportJson())).toMatchObject({ events: [{ id: 'a' }] });
+  });
+});
+
+describe('statut du dialogue', () => {
+  it('est enregistré et survit aux mises à jour venues du moteur', async () => {
+    const { history, store, emit } = setup();
+    emit([{ kind: 'opened', event: ev('x', 1, { closed: false }) }]);
+    await history.getState().setDialogStatus('x', 'asked');
+    emit([{ kind: 'updated', event: ev('x', 1, { closed: false }) }]);
+    expect(history.getState().events[0]?.dialogStatus).toBe('asked');
+    expect(store.updateDialogStatus).toHaveBeenCalledWith('x', 'asked');
   });
 });
