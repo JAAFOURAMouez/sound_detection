@@ -56,6 +56,9 @@ export interface StepDeps {
   config?: EventEngineConfig;
 }
 
+/** Familles qui décrivent le fond sonore lui-même : elles ne nomment pas une anomalie. */
+const BACKGROUND_FAMILIES = ['ambient'];
+
 function knownTrigger(frame: Frame, cfg: EventEngineConfig) {
   const d = frame.dominant;
   return d && d.severity >= cfg.knownSeverity && d.score >= cfg.knownConfidence ? d : null;
@@ -82,6 +85,21 @@ function absorb(event: SoundEvent, frame: Frame, cfg: EventEngineConfig): SoundE
     next.severity = Math.max(next.severity, known.severity) as Severity;
     next.confidence = Math.max(next.confidence, known.score);
     next.topK = frame.top;
+  } else if (next.type === 'unknown') {
+    // Anomalie dont la famille est reconnue avec assez de confiance (chat, voix, musique…) :
+    // elle n'est plus « inconnue », mais garde la gravité d'une anomalie (vérification).
+    const named = frame.dominant;
+    if (
+      named &&
+      !BACKGROUND_FAMILIES.includes(named.family) &&
+      named.score >= cfg.knownConfidence
+    ) {
+      next.type = 'known';
+      next.family = named.family;
+      next.severity = Math.max(next.severity, named.severity) as Severity;
+      next.confidence = named.score;
+      next.topK = frame.top;
+    }
   }
   return next;
 }

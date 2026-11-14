@@ -80,6 +80,30 @@ describe('moteur d’événements', () => {
     expect(r.closed[0]).toMatchObject({ type: 'known', family: 'glass' });
   });
 
+  it('nomme une anomalie dont la famille bénigne est reconnue, sans la rendre plus grave', () => {
+    const cat = { family: 'animal', score: 0.8, severity: 0 as Severity };
+    const r = run(frames([...calm(2), { score: 0.7 }, { score: 0.8, dominant: cat }, ...calm(3)]));
+    expect(r.opened[0]?.type).toBe('unknown');
+    expect(r.closed[0]).toMatchObject({
+      type: 'known',
+      family: 'animal',
+      severity: 1,
+      confidence: 0.8,
+    });
+  });
+
+  it('ne nomme pas une anomalie d’après le fond sonore ni une famille peu sûre', () => {
+    const r = run(
+      frames([
+        ...calm(2),
+        { score: 0.7, dominant: { family: 'ambient', score: 0.9, severity: 0 as Severity } },
+        { score: 0.8, dominant: { family: 'animal', score: 0.3, severity: 0 as Severity } },
+        ...calm(3),
+      ]),
+    );
+    expect(r.closed[0]).toMatchObject({ type: 'unknown', family: null });
+  });
+
   it('fusionne deux pics séparés de 1,5 s', () => {
     // pic, 2 trames calmes (fermeture), 1 trame calme, pic : 1,5 s entre fin et reprise.
     const r = run(frames([...calm(2), { score: 0.8 }, ...calm(3), { score: 0.7 }, ...calm(4)]));
