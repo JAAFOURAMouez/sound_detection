@@ -194,10 +194,26 @@ export const assistantStore = createAssistantStore({
   now: () => Date.now(),
 });
 
-// L'assistant prend l'initiative dès l'ouverture d'un événement (latence minimale).
+/**
+ * Délai laissé au classifieur pour nommer une anomalie : le score d'anomalie réagit souvent
+ * une fenêtre avant que la famille (chat, voix…) ne soit reconnue.
+ */
+export const UNKNOWN_PROMPT_DELAY_MS = 1_500;
+
+// L'assistant prend l'initiative dès l'ouverture d'un événement connu ; pour une anomalie
+// inconnue, il attend un instant et parle de l'état le plus récent de l'événement.
 recorder.subscribe((changes) => {
   for (const change of changes) {
-    if (change.kind === 'opened') assistantStore.getState().onEvent(change.event);
+    if (change.kind !== 'opened') continue;
+    const { event } = change;
+    if (event.type !== 'unknown') {
+      assistantStore.getState().onEvent(event);
+      continue;
+    }
+    setTimeout(() => {
+      const latest = historyStore.getState().events.find((e) => e.id === event.id) ?? event;
+      assistantStore.getState().onEvent(latest);
+    }, UNKNOWN_PROMPT_DELAY_MS);
   }
 });
 
