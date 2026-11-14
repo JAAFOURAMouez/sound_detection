@@ -47,7 +47,7 @@ function renderView(events: SoundEvent[], overrides = {}) {
 describe('HistoryView', () => {
   it('résume la répartition par famille', () => {
     renderView([ev('a', 'glass'), ev('b', 'glass'), ev('c', null, 'unknown')]);
-    expect(screen.getByRole('status')).toHaveTextContent(`3 ${fr.history.count}`);
+    expect(screen.getByRole('status')).toHaveTextContent('3 événements');
     expect(screen.getAllByText(fr.families.glass).length).toBeGreaterThan(0);
     expect(screen.getAllByText(fr.events.unknown).length).toBeGreaterThan(0);
   });

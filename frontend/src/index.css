@@ -52,6 +52,62 @@ body {
   outline-offset: 2px;
 }
 
+/* Commandes de formulaire au style de l'instrument (jamais le rendu par défaut du navigateur). */
+input[type='checkbox'] {
+  appearance: none;
+  display: inline-grid;
+  place-content: center;
+  width: 0.875rem;
+  height: 0.875rem;
+  margin: 0;
+  border: var(--sg-stroke) solid var(--sg-text-dim);
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='checkbox']::before {
+  content: '';
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--sg-phosphor);
+  transform: scale(0);
+  transition: transform var(--sg-duration-fast);
+}
+
+input[type='checkbox']:checked {
+  border-color: var(--sg-phosphor);
+}
+
+input[type='checkbox']:checked::before {
+  transform: scale(1);
+}
+
+select {
+  appearance: none;
+  padding: var(--sg-space-1) var(--sg-space-6) var(--sg-space-1) var(--sg-space-2);
+  border: var(--sg-stroke) solid var(--sg-grid-strong);
+  border-radius: 0;
+  background-color: var(--sg-bg);
+  /* Chevron dessiné par deux dégradés : suit les jetons de couleur, sans image. */
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--sg-text-dim) 50%),
+    linear-gradient(135deg, var(--sg-text-dim) 50%, transparent 50%);
+  background-position:
+    calc(100% - 0.85rem) 55%,
+    calc(100% - 0.55rem) 55%;
+  background-size: 0.3rem 0.3rem;
+  background-repeat: no-repeat;
+  color: var(--sg-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+select:hover,
+input[type='checkbox']:hover {
+  border-color: var(--sg-phosphor);
+}
+
 /* Étiquettes d'instrument : petites capitales espacées */
 .sg-label {
   font-family: var(--sg-font-data);

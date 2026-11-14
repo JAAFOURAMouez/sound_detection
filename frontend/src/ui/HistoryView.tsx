@@ -261,12 +261,12 @@ export function HistoryView({
           </select>
         </label>
         <p className="sg-history__count" role="status">
-          {events.length} {t.history.count}
+          {t.history.count(events.length)}
         </p>
       </form>
 
       {allEvents.length === 0 ? (
-        <p className="sg-history__note">{t.history.empty}</p>
+        <EmptyHistory />
       ) : (
         <>
           <Timeline events={events} onSelect={onSelect} />
@@ -413,5 +413,26 @@ export function HistoryView({
         <p className="sg-history__note">{t.history.privacy}</p>
       </footer>
     </main>
+  );
+}
+
+/** Historique vide : un cadran sans écho, et ce qu'il faut faire pour le remplir. */
+function EmptyHistory() {
+  return (
+    <section className="sg-history__empty" aria-labelledby="history-empty-title">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" />
+        <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" />
+        <circle cx="50" cy="50" r="14" fill="none" stroke="currentColor" />
+        <path d="M50 2v96M2 50h96" stroke="currentColor" strokeDasharray="2 3" />
+      </svg>
+      <div>
+        <h2 id="history-empty-title">{t.history.empty}</h2>
+        <p>{t.history.emptyHint}</p>
+        <a className="sg-button" href="#">
+          {t.history.emptyAction}
+        </a>
+      </div>
+    </section>
   );
 }

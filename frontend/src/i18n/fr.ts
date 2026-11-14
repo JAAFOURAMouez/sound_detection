@@ -140,6 +140,9 @@ export const fr = {
   history: {
     title: 'Historique',
     empty: 'Aucun événement enregistré.',
+    emptyHint:
+      'Lance l’écoute ou la démonstration : chaque son inhabituel laissera ici une trace datée, que tu pourras annoter et exporter.',
+    emptyAction: 'Aller à l’écoute',
     loading: 'Chargement de l’historique…',
     error: 'L’historique local n’a pas pu être lu.',
     filters: 'Filtres',
@@ -154,7 +157,7 @@ export const fr = {
       'Score lissé, mesuré chaque seconde ; la ligne horizontale est le seuil.',
     session: 'Session',
     noScores: 'Pas de mesure de score pour cette session.',
-    count: 'événements',
+    count: (n: number) => `${String(n)} ${n > 1 ? 'événements' : 'événement'}`,
     exportJson: 'Exporter en JSON',
     exportCsv: 'Exporter en CSV',
     delete: 'Supprimer tout l’historique',

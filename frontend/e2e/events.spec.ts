@@ -63,8 +63,8 @@ test.describe('événements et historique', () => {
     await page.reload();
     await page.getByRole('link', { name: fr.nav.history }).click();
     await expect(page).toHaveURL(/#historique$/);
-    await expect(page.getByRole('status').filter({ hasText: fr.history.count })).not.toHaveText(
-      `0 ${fr.history.count}`,
+    await expect(page.getByRole('status').filter({ hasText: /événements?$/ })).not.toHaveText(
+      fr.history.count(0),
     );
     await expect(page.getByText('test de persistance')).toBeVisible();
     await expect(page.getByTestId('timeline')).toBeVisible();
