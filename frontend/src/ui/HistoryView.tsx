@@ -1,3 +1,4 @@
+import { useTheme } from './theme';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SessionRecord } from '../events/db';
 import type { EventType, SoundEvent } from '../events/types';
@@ -74,7 +75,9 @@ function Timeline({ events, onSelect }: { events: SoundEvent[]; onSelect: (id: s
     marks.current = placed;
   };
 
-  useCanvasLoop(canvasRef, draw, false, undefined, events);
+  const theme = useTheme();
+  const redraw = useMemo(() => ({ events, theme }), [events, theme]);
+  useCanvasLoop(canvasRef, draw, false, undefined, redraw);
 
   return (
     <figure
@@ -143,7 +146,9 @@ function ScoreCurve({ series }: { series: { t: number; score: number }[] }) {
     });
     ctx.stroke();
   };
-  useCanvasLoop(canvasRef, draw, false, undefined, series);
+  const theme = useTheme();
+  const redraw = useMemo(() => ({ series, theme }), [series, theme]);
+  useCanvasLoop(canvasRef, draw, false, undefined, redraw);
   return <canvas ref={canvasRef} className="sg-history__curve" aria-hidden="true" />;
 }
 

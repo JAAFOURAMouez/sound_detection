@@ -10,6 +10,7 @@ import { SkipLink } from './ui/SkipLink';
 import { HistoryView } from './ui/HistoryView';
 import { MicIndicator } from './ui/MicIndicator';
 import { ViewTabs } from './ui/ViewTabs';
+import { ThemeToggle } from './ui/ThemeToggle';
 import { AboutView } from './ui/AboutView';
 import { VIEW_HASH, viewFromHash } from './ui/views';
 import { AnomalyGauge } from './ui/AnomalyGauge';
@@ -109,7 +110,12 @@ export function App() {
     URL.revokeObjectURL(url);
   };
 
-  const tabs = <ViewTabs view={view} onChange={changeView} />;
+  const tabs = (
+    <>
+      <ViewTabs view={view} onChange={changeView} />
+      <ThemeToggle />
+    </>
+  );
   const sheet = (
     <EventSheet
       event={selected}

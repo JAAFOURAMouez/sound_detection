@@ -1,3 +1,4 @@
+import { currentTheme } from './theme';
 import type { SoundEvent } from '../events/types';
 import { t } from '../i18n';
 import { familyLabel } from './labels';
@@ -41,9 +42,14 @@ export function eventValue(
 }
 
 const colorCache = new Map<string, string>();
+let colorTheme = currentTheme();
 
 /** Couleur lue dans les jetons CSS (mise en cache : appelée dans les boucles de dessin). */
 export function familyColor(key: string): string {
+  if (colorTheme !== currentTheme()) {
+    colorCache.clear();
+    colorTheme = currentTheme();
+  }
   let color = colorCache.get(key);
   if (!color) {
     color =

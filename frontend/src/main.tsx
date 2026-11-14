@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import './index.css';
 import { appStore } from './state/appStore';
+import { applyTheme, storedTheme } from './ui/theme';
+
+// Avant le premier rendu : pas de flash du mauvais thème.
+applyTheme(storedTheme(), { persist: false });
 
 // Point d'observation réservé au build de test de bout en bout (absent du build normal).
 if (import.meta.env.VITE_E2E === '1') {

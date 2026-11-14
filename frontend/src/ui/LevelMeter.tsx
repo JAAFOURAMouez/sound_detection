@@ -1,4 +1,5 @@
-import { useMemo, useRef } from 'react';
+import { useTheme } from './theme';
+import { useEffect, useMemo, useRef } from 'react';
 import { computeRms, LevelSmoother, toDbfs } from '../audio/level';
 import { t } from '../i18n';
 import { type CanvasFrame, useCanvasLoop } from './useCanvasLoop';
@@ -28,6 +29,11 @@ export function LevelMeter({ analyser, running }: LevelMeterProps) {
     }),
     [analyser],
   );
+
+  const theme = useTheme();
+  useEffect(() => {
+    colors.current = null;
+  }, [theme]);
 
   const draw = ({ ctx, width, height, time, dt }: CanvasFrame) => {
     if (!analyser) return;

@@ -14,7 +14,7 @@
   /* Texte */
   --sg-text: #d6e0e8;
   --sg-text-dim: #8b9cab;
-  --sg-text-faint: #5d6f7f;
+  --sg-text-faint: #75899b;
 
   /* Accent unique « phosphore » */
   --sg-phosphor: #4ff0a8;
@@ -77,6 +77,50 @@
   --sg-text-base: 0.9375rem;
   --sg-text-lg: 1.25rem;
   --sg-tracking-caps: 0.12em;
+}
+
+/*
+ * Thème clair « papier millimétré » (option) : mêmes rôles, encres foncées sur papier.
+ * L'ambre et le rouge restent réservés à la gravité.
+ */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --sg-bg: #f3f0e6;
+  --sg-surface: #f8f6ef;
+  --sg-surface-raised: #ebe6d8;
+  --sg-grid: #d5ddd3;
+  --sg-grid-strong: #aebcb0;
+
+  --sg-text: #17231f;
+  --sg-text-dim: #45544e;
+  --sg-text-faint: #54625c;
+
+  --sg-phosphor: #0b6e47;
+  --sg-phosphor-dim: #4c9c78;
+  --sg-phosphor-glow: rgb(11 110 71 / 0.12);
+  --sg-scanline: rgb(0 0 0 / 0.025);
+
+  --sg-severity-0: #4f5d58;
+  --sg-severity-1: #0b6e47;
+  --sg-severity-2: #8a5000;
+  --sg-severity-3: #b3261e;
+
+  --sg-family-smoke_fire: #7a3fb8;
+  --sg-family-explosion: #8d2fa3;
+  --sg-family-voice_distress: #a3307c;
+  --sg-family-alarm: #1f64a8;
+  --sg-family-glass: #0a6878;
+  --sg-family-impact: #2952b3;
+  --sg-family-mechanical: #4b55b8;
+  --sg-family-bell_phone: #2f6b50;
+  --sg-family-water: #0b6b62;
+  --sg-family-voice: #3f6b17;
+  --sg-family-music: #5c610e;
+  --sg-family-animal: #1f6b34;
+  --sg-family-ambient: #54625c;
+  --sg-family-other: #54625c;
+  --sg-family-unknown: #17231f;
+  --sg-family-drift: #54625c;
 }
 
 @media (prefers-reduced-motion: reduce) {

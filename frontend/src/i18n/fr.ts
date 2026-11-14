@@ -111,6 +111,11 @@ export const fr = {
     history: 'Historique',
     about: 'À propos',
   },
+  theme: {
+    light: 'Thème clair « papier millimétré »',
+    toLight: 'Passer au thème clair',
+    toDark: 'Revenir au thème sombre',
+  },
   about: {
     title: 'À propos de SoundGuard',
     intro:

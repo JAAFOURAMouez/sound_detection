@@ -5,6 +5,7 @@ import { eventColorKey, familyColor } from './eventFormat';
 import { echoGeometry, ECHO_PERIOD_MS, pulseRing } from './viz/echo';
 import { RADAR_PERIOD_SECONDS, RADAR_RINGS, RADAR_TICKS } from './viz/config';
 import { angleForTime, polarToCanvas } from './viz/radarGeometry';
+import { useTheme } from './theme';
 import { type CanvasFrame, prefersReducedMotion, useCanvasLoop } from './useCanvasLoop';
 
 interface RadarProps {
@@ -116,6 +117,12 @@ export function Radar({
   const colors = useRef<{ grid: string; strong: string; phosphor: string; faint: string } | null>(
     null,
   );
+  // Changement de thème : couleurs relues et calque des échos redessiné.
+  const theme = useTheme();
+  useEffect(() => {
+    colors.current = null;
+    layerDrawnAt.current = Number.NEGATIVE_INFINITY;
+  }, [theme]);
 
   const draw = ({ ctx, width, height }: CanvasFrame) => {
     colors.current ??= {
@@ -278,7 +285,7 @@ export function Radar({
     draw,
     (sweeping && !reduced) || calibration !== null,
     undefined,
-    reduced ? `${String(events.length)}:${String(tick)}` : undefined,
+    `${theme}:${reduced ? `${String(events.length)}:${String(tick)}` : ''}`,
   );
 
   return (
