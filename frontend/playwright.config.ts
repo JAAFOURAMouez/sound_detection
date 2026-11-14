@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4173;
+const API_PORT = 8000;
 
 export default defineConfig({
   testDir: './e2e',
@@ -28,11 +29,25 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    // Build de production dédié aux tests : expose un point d'observation (VITE_E2E).
-    command: `npm run build:e2e && npx vite preview --outDir dist-e2e --port ${String(PORT)} --strictPort`,
-    url: `http://localhost:${String(PORT)}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  webServer: [
+    {
+      // Build de production dédié aux tests : expose un point d'observation (VITE_E2E).
+      command: `npm run build:e2e && npx vite preview --outDir dist-e2e --port ${String(PORT)} --strictPort`,
+      url: `http://localhost:${String(PORT)}`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      // Backend réel avec le fournisseur `mock` : aucun réseau, aucune clé.
+      command: `uv run --directory ../backend uvicorn app.main:app --port ${String(API_PORT)}`,
+      url: `http://localhost:${String(API_PORT)}/api/health`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+      env: {
+        LLM_PROVIDER: 'mock',
+        ALLOWED_ORIGINS: `http://localhost:${String(PORT)}`,
+        RATE_LIMIT_PER_MINUTE: '1000',
+      },
+    },
+  ],
 });
