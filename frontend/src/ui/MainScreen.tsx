@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { SoundEvent } from '../events/types';
 import type { AppStatus } from '../state/appStore';
 import { Journal } from './Journal';
 import { Radar } from './Radar';
@@ -16,6 +17,8 @@ interface MainScreenProps {
   controls?: ReactNode;
   calibration?: number | null;
   demoPicker: ReactNode;
+  events?: readonly SoundEvent[];
+  onSelectEvent?: (id: string) => void;
   onPause: () => void;
   onResume: () => void;
   onStop: () => void;
@@ -32,6 +35,8 @@ export function MainScreen({
   controls = null,
   calibration = null,
   demoPicker,
+  events = [],
+  onSelectEvent = () => undefined,
   onPause,
   onResume,
   onStop,
@@ -52,12 +57,14 @@ export function MainScreen({
         <Radar
           sweeping={status === 'monitoring' || status === 'calibrating'}
           calibration={calibration}
+          events={events}
+          onSelect={onSelectEvent}
         />
         <div className="sg-side">
           {demoPicker}
           {anomaly}
           {live}
-          <Journal />
+          <Journal events={events} onSelect={onSelectEvent} />
         </div>
       </main>
       <div className="sg-main__spectrogram">{spectrogram}</div>

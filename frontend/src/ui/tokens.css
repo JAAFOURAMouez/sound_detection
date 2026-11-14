@@ -27,6 +27,25 @@
   --sg-severity-2: #ffb547;
   --sg-severity-3: #ff5b4f;
 
+  /* Familles d'événements (radar, journal, historique). Ni ambre ni rouge : réservés à la gravité,
+     portée par la taille des échos et les marques ▮. */
+  --sg-family-smoke_fire: #c58cff;
+  --sg-family-explosion: #e08cff;
+  --sg-family-voice_distress: #f08ce0;
+  --sg-family-alarm: #7cc8ff;
+  --sg-family-glass: #6ff2ff;
+  --sg-family-impact: #5aa8ff;
+  --sg-family-mechanical: #93a6ff;
+  --sg-family-bell_phone: #a7e8c8;
+  --sg-family-water: #4fd6c8;
+  --sg-family-voice: #a6ec78;
+  --sg-family-music: #d0f07a;
+  --sg-family-animal: #6ee68a;
+  --sg-family-ambient: #6f8293;
+  --sg-family-other: #a2b1bf;
+  --sg-family-unknown: #f2f6f8;
+  --sg-family-drift: #6f8293;
+
   /* Espacements (base 4 px) */
   --sg-space-1: 0.25rem;
   --sg-space-2: 0.5rem;

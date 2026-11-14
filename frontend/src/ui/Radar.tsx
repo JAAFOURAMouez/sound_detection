@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
+import type { SoundEvent } from '../events/types';
 import { t } from '../i18n';
+import { eventColorKey, familyColor } from './eventFormat';
+import { echoGeometry, ECHO_PERIOD_MS } from './viz/echo';
 import { RADAR_PERIOD_SECONDS, RADAR_RINGS, RADAR_TICKS } from './viz/config';
 import { angleForTime, polarToCanvas } from './viz/radarGeometry';
 import { type CanvasFrame, prefersReducedMotion, useCanvasLoop } from './useCanvasLoop';
@@ -9,6 +12,69 @@ interface RadarProps {
   sweeping: boolean;
   /** Progression de la calibration (0 à 1), ou null hors calibration. */
   calibration?: number | null;
+  /** Événements à afficher comme échos (seuls ceux de la dernière minute apparaissent). */
+  events?: readonly SoundEvent[];
+  onSelect?: (id: string) => void;
+  /** Horloge (ms) : Date.now par défaut, injectable pour les tests. */
+  now?: () => number;
+}
+
+interface Echo {
+  id: string;
+  x: number;
+  y: number;
+  r: number;
+}
+
+/** Dessine les échos (groupés par couleur et palier d'opacité) et renvoie leurs positions. */
+function drawEchoes(
+  ctx: CanvasRenderingContext2D,
+  events: readonly SoundEvent[],
+  current: number,
+  cx: number,
+  cy: number,
+  radius: number,
+): Echo[] {
+  const placed: Echo[] = [];
+  // Dessin groupé : un chemin par (couleur, palier d'opacité) au lieu d'un par écho, pour
+  // tenir 60 images/s avec des centaines d'échos.
+  const batches = new Map<
+    string,
+    { color: string; alpha: number; halo: Path2D; dot: Path2D; rings: Path2D }
+  >();
+  for (const event of events) {
+    const g = echoGeometry(event, current, cx, cy, radius);
+    if (!g) continue;
+    const color = familyColor(eventColorKey(event));
+    const alpha = Math.ceil(g.alpha * 8) / 8;
+    const key = `${color}|${String(alpha)}`;
+    let batch = batches.get(key);
+    if (!batch) {
+      batch = { color, alpha, halo: new Path2D(), dot: new Path2D(), rings: new Path2D() };
+      batches.set(key, batch);
+    }
+    batch.halo.moveTo(g.x + g.r * 2.2, g.y);
+    batch.halo.arc(g.x, g.y, g.r * 2.2, 0, 2 * Math.PI);
+    batch.dot.moveTo(g.x + g.r, g.y);
+    batch.dot.arc(g.x, g.y, g.r, 0, 2 * Math.PI);
+    for (let ring = 2; ring <= event.severity; ring++) {
+      batch.rings.moveTo(g.x + g.r + ring * 3, g.y);
+      batch.rings.arc(g.x, g.y, g.r + ring * 3, 0, 2 * Math.PI);
+    }
+    placed.push({ id: event.id, x: g.x, y: g.y, r: g.r + 6 });
+  }
+  ctx.lineWidth = 1;
+  for (const b of batches.values()) {
+    ctx.fillStyle = b.color;
+    ctx.strokeStyle = b.color;
+    ctx.globalAlpha = b.alpha * 0.25;
+    ctx.fill(b.halo);
+    ctx.globalAlpha = b.alpha;
+    ctx.fill(b.dot);
+    ctx.stroke(b.rings);
+  }
+  ctx.globalAlpha = 1;
+  return placed;
 }
 
 function cssVar(name: string, fallback: string): string {
@@ -16,7 +82,31 @@ function cssVar(name: string, fallback: string): string {
   return value || fallback;
 }
 
-export function Radar({ sweeping, calibration = null }: RadarProps) {
+export function Radar({
+  sweeping,
+  calibration = null,
+  events = [],
+  onSelect,
+  now = () => Date.now(),
+}: RadarProps) {
+  const eventsRef = useRef(events);
+  const eventsVersion = useRef(0);
+  const echoes = useRef<Echo[]>([]);
+  const echoLayer = useRef<HTMLCanvasElement | null>(null);
+  const layerDrawnAt = useRef(Number.NEGATIVE_INFINITY);
+  const layerVersion = useRef(-1);
+  useEffect(() => {
+    // Seuls les événements récents peuvent être visibles : on évite de parcourir tout l'historique.
+    const recent: SoundEvent[] = [];
+    for (let i = events.length - 1; i >= 0; i--) {
+      const e = events[i];
+      if (!e) continue;
+      if (now() - e.end > ECHO_PERIOD_MS) break;
+      recent.push(e);
+    }
+    eventsRef.current = recent;
+    eventsVersion.current += 1;
+  }, [events, now]);
   const calibrationRef = useRef(calibration);
   useEffect(() => {
     calibrationRef.current = calibration;
@@ -27,7 +117,7 @@ export function Radar({ sweeping, calibration = null }: RadarProps) {
     null,
   );
 
-  const draw = ({ ctx, width, height, time }: CanvasFrame) => {
+  const draw = ({ ctx, width, height }: CanvasFrame) => {
     colors.current ??= {
       grid: cssVar('--sg-grid', '#16222d'),
       strong: cssVar('--sg-grid-strong', '#23364a'),
@@ -98,10 +188,38 @@ export function Radar({ sweeping, calibration = null }: RadarProps) {
       ctx.fillText(`${String(Math.round(progress * 100))} %`, cx, cy);
     }
 
+    // Échos : le temps est l'angle (un tour = la dernière minute), le score la distance au
+    // centre ; la couleur donne la famille, la taille et les anneaux la gravité.
+    const current = now();
+    // Les échos sont dessinés sur un calque mis à jour au plus deux fois par seconde (ils ne
+    // bougent pas, ils pâlissent lentement) ; chaque image ne fait que le recopier.
+    const dpr = ctx.getTransform().a || 1;
+    let layer = echoLayer.current;
+    if (!layer || layer.width !== ctx.canvas.width || layer.height !== ctx.canvas.height) {
+      layer = document.createElement('canvas');
+      layer.width = ctx.canvas.width;
+      layer.height = ctx.canvas.height;
+      echoLayer.current = layer;
+      layerDrawnAt.current = Number.NEGATIVE_INFINITY;
+    }
+    const layerCtx = layer.getContext('2d');
+    if (
+      layerCtx &&
+      (current - layerDrawnAt.current >= 500 || layerVersion.current !== eventsVersion.current)
+    ) {
+      layerDrawnAt.current = current;
+      layerVersion.current = eventsVersion.current;
+      layerCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      layerCtx.clearRect(0, 0, width, height);
+      echoes.current = drawEchoes(layerCtx, eventsRef.current, current, cx, cy, radius);
+    }
+    ctx.drawImage(layer, 0, 0, width, height);
+
     if (!sweeping) return;
 
-    // Balayage : l'aiguille donne l'instant présent, une traînée marque les secondes passées.
-    const angle = reduced ? 0 : angleForTime(time / 1000, RADAR_PERIOD_SECONDS);
+    // Balayage : l'aiguille marque l'instant présent (même horloge que les échos), une traînée
+    // marque les secondes passées.
+    const angle = reduced ? 0 : angleForTime(current / 1000, RADAR_PERIOD_SECONDS);
     const trail = reduced ? 0 : Math.PI / 6;
     const steps = 24;
     for (let s = 0; s < steps && trail > 0; s++) {
@@ -134,10 +252,30 @@ export function Radar({ sweeping, calibration = null }: RadarProps) {
           {t.main.radar}
         </span>
         <span id="radar-desc" className="sg-sr-only">
-          {t.main.radarDescription}
+          {t.main.radarDescription} {t.events.radarHint}
         </span>
       </figcaption>
-      <canvas ref={canvasRef} className="sg-radar__canvas" aria-hidden="true" />
+      <canvas
+        ref={canvasRef}
+        className="sg-radar__canvas"
+        aria-hidden="true"
+        onClick={(e) => {
+          if (!onSelect) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          let best: Echo | null = null;
+          let bestDistance = Number.POSITIVE_INFINITY;
+          for (const echo of echoes.current) {
+            const d = Math.hypot(echo.x - x, echo.y - y);
+            if (d <= echo.r && d < bestDistance) {
+              best = echo;
+              bestDistance = d;
+            }
+          }
+          if (best) onSelect(best.id);
+        }}
+      />
     </figure>
   );
 }
