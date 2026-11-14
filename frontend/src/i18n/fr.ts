@@ -32,9 +32,10 @@ export const fr = {
     retry: 'Réessayer',
   },
   main: {
+    skip: 'Aller au contenu',
     radar: 'Radar acoustique',
     radarDescription:
-      'Un tour représente la dernière minute ; la distance au centre indiquera le score d’anomalie.',
+      'Un tour représente la dernière minute ; la distance au centre indique le score d’anomalie, la couleur la famille du son et la taille sa gravité.',
     journal: 'Journal',
     journalEmpty: 'Aucun événement pour l’instant.',
     spectrogram: 'Spectrogramme mel',
@@ -135,7 +136,8 @@ export const fr = {
     saved: 'Note enregistrée',
     replay: 'Réécouter l’extrait (3 s)',
     replayUnavailable: 'Extrait non disponible (il n’est gardé qu’en mémoire, pendant la session).',
-    radarHint: 'Clique sur un écho du radar ou sur une ligne du journal pour ouvrir la fiche.',
+    radarHint:
+      'Clique sur un écho du radar ou sur une ligne du journal pour ouvrir la fiche. Au clavier, le journal donne accès aux mêmes événements.',
   },
   history: {
     title: 'Historique',

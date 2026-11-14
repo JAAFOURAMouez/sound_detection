@@ -108,6 +108,29 @@ input[type='checkbox']:hover {
   border-color: var(--sg-phosphor);
 }
 
+/* Lien d'évitement : invisible jusqu'à ce qu'il reçoive le focus clavier. */
+.sg-skip {
+  position: absolute;
+  top: var(--sg-space-2);
+  left: var(--sg-space-2);
+  z-index: 10;
+  padding: var(--sg-space-2) var(--sg-space-3);
+  background: var(--sg-bg);
+  color: var(--sg-phosphor);
+  border: var(--sg-stroke) solid var(--sg-phosphor);
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-sm);
+  transform: translateY(-200%);
+}
+
+.sg-skip:focus-visible {
+  transform: none;
+}
+
+main:focus {
+  outline: none;
+}
+
 /* Étiquettes d'instrument : petites capitales espacées */
 .sg-label {
   font-family: var(--sg-font-data);

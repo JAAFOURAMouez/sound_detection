@@ -20,7 +20,7 @@ export function ConsentScreen({
   const error = errorKind ? t.captureError[errorKind] : null;
 
   return (
-    <main className="sg-consent">
+    <main id="contenu" tabIndex={-1} className="sg-consent">
       <section className="sg-consent__panel" aria-labelledby="consent-title">
         {nav}
         <p className="sg-label">

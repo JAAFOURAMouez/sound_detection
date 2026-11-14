@@ -57,4 +57,16 @@ describe('EventSheet', () => {
       expect(screen.getByRole('status')).toHaveTextContent(fr.events.saved);
     });
   });
+
+  it('rend le focus à l’élément qui a ouvert la fiche', () => {
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
+    const props = { clip: null, onClose: vi.fn(), onSaveNote: vi.fn() };
+    const { rerender } = render(<EventSheet event={event} {...props} />);
+    screen.getByRole('button', { name: fr.events.close }).focus();
+    rerender(<EventSheet event={null} {...props} />);
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
 });

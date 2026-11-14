@@ -71,7 +71,7 @@ export function MainScreen({
         onResume={onResume}
         onStop={onStop}
       />
-      <main className="sg-main__body">
+      <main id="contenu" tabIndex={-1} className="sg-main__body">
         <Radar
           sweeping={status === 'monitoring' || status === 'calibrating'}
           calibration={calibration}

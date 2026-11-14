@@ -6,6 +6,7 @@ import { TransmissionLine } from './ui/TransmissionLine';
 import { filterEvents, historyStore, useHistoryStore, type View } from './state/historyStore';
 import { eventStore, recorder } from './state/services';
 import { EventSheet } from './ui/EventSheet';
+import { SkipLink } from './ui/SkipLink';
 import { HistoryView } from './ui/HistoryView';
 import { MicIndicator } from './ui/MicIndicator';
 import { ViewTabs } from './ui/ViewTabs';
@@ -121,6 +122,7 @@ export function App() {
   if (view === 'history') {
     return (
       <div className="sg-main sg-main--history">
+        <SkipLink />
         <header className="sg-statusbar">
           <p className="sg-statusbar__brand">
             <span className="sg-statusbar__name">{t.app.name}</span>
@@ -148,13 +150,16 @@ export function App() {
 
   if (status === 'idle' || status === 'consent' || status === 'error') {
     return (
-      <ConsentScreen
-        pending={status === 'consent'}
-        errorKind={errorKind}
-        onAccept={() => void requestCapture()}
-        onDemo={() => void requestDemo()}
-        nav={tabs}
-      />
+      <>
+        <SkipLink />
+        <ConsentScreen
+          pending={status === 'consent'}
+          errorKind={errorKind}
+          onAccept={() => void requestCapture()}
+          onDemo={() => void requestDemo()}
+          nav={tabs}
+        />
+      </>
     );
   }
 
@@ -163,6 +168,7 @@ export function App() {
   const demo = source === 'demo';
   return (
     <>
+      <SkipLink />
       <MainScreen
         status={status}
         dialogue={dialog.phase !== 'idle'}

@@ -25,16 +25,24 @@ function playClip(clip: Float32Array) {
 
 export function EventSheet({ event, clip, onClose, onSaveNote }: EventSheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // Élément qui avait le focus à l'ouverture : il le retrouve à la fermeture (Échap compris).
+  const opener = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (event && !dialog.open) {
+      opener.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
       if (typeof dialog.showModal === 'function') dialog.showModal();
       else dialog.setAttribute('open', '');
     } else if (!event && dialog.open) {
       if (typeof dialog.close === 'function') dialog.close();
       else dialog.removeAttribute('open');
+    }
+    if (!event && opener.current) {
+      if (opener.current.isConnected) opener.current.focus();
+      opener.current = null;
     }
   }, [event]);
 

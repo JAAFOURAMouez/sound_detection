@@ -194,7 +194,7 @@ export function HistoryView({
   if (!loaded) return <p className="sg-history__note">{t.history.loading}</p>;
 
   return (
-    <main className="sg-history" aria-labelledby="history-title">
+    <main id="contenu" tabIndex={-1} className="sg-history" aria-labelledby="history-title">
       <h1 id="history-title" className="sg-sr-only">
         {t.history.title}
       </h1>
