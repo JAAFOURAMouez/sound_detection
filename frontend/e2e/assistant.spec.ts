@@ -79,6 +79,25 @@ test.describe('assistant vocal', () => {
       .toBe(true);
   });
 
+  test('l’origine du son donnée par l’utilisateur rejoint le journal', async ({ page }) => {
+    await fakeVoice(page, 1_000);
+    await startDemo(page);
+    await page.getByRole('button', { name: fr.demo.samples['glass-breaking'] }).click();
+    const input = page.getByLabel(fr.assistant.inputLabel);
+    await expect(input).toBeVisible({ timeout: 15_000 });
+    await input.fill('c’est le chat qui a fait tomber un verre');
+    await input.press('Enter');
+
+    await expect(line(page)).toContainText('noté dans le journal', { timeout: 10_000 });
+    const journal = page.getByRole('list', { name: fr.events.journalLabel });
+    await expect(journal).toContainText('c’est le chat qui a fait tomber un verre');
+    const notes = await page.evaluate(() =>
+      (window.__soundguardHistory?.store.getState().events ?? []).map((e) => e.note),
+    );
+    console.log(`notes : ${JSON.stringify(notes)}`);
+    expect(notes).toContain('c’est le chat qui a fait tomber un verre');
+  });
+
   test('sans backend : réponse locale et indicateur hors ligne', async ({ page }) => {
     await fakeVoice(page, 1_000);
     await page.route('**/api/**', (route) => route.abort());
