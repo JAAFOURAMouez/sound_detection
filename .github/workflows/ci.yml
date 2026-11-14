@@ -31,6 +31,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      - name: Bundle initial sous 300 Ko compressés
+        run: npm run size
       - name: Aucun secret dans le bundle
         run: |
           if grep -rIEn "gsk_[A-Za-z0-9]{8,}|GROQ_API_KEY|LLM_API_KEY" dist; then

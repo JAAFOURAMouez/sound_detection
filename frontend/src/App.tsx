@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { t } from './i18n';
 import { useAppStore } from './state/appStore';
 import { assistantStore, useAssistantStore } from './state/assistantStore';
@@ -7,11 +7,9 @@ import { filterEvents, historyStore, useHistoryStore, type View } from './state/
 import { eventStore, recorder } from './state/services';
 import { EventSheet } from './ui/EventSheet';
 import { SkipLink } from './ui/SkipLink';
-import { HistoryView } from './ui/HistoryView';
 import { MicIndicator } from './ui/MicIndicator';
 import { ViewTabs } from './ui/ViewTabs';
 import { ThemeToggle } from './ui/ThemeToggle';
-import { AboutView } from './ui/AboutView';
 import { VIEW_HASH, viewFromHash } from './ui/views';
 import { AnomalyGauge } from './ui/AnomalyGauge';
 import { ClassifierSwitch } from './ui/ClassifierSwitch';
@@ -22,6 +20,13 @@ import { LiveLabels } from './ui/LiveLabels';
 import { MainScreen } from './ui/MainScreen';
 import { ModelStatus } from './ui/ModelStatus';
 import { Spectrogram } from './ui/Spectrogram';
+
+// Vues secondaires chargées à la demande : le bundle initial ne contient que l'écoute.
+const HistoryView = lazy(() =>
+  import('./ui/HistoryView').then((m) => ({ default: m.HistoryView })),
+);
+const AboutView = lazy(() => import('./ui/AboutView').then((m) => ({ default: m.AboutView })));
+const pageLoading = <p className="sg-history__note">{t.history.loading}</p>;
 
 export function App() {
   const status = useAppStore((s) => s.status);
@@ -142,7 +147,9 @@ export function App() {
       <div className="sg-main sg-main--history">
         <SkipLink />
         {pageHeader}
-        <AboutView />
+        <Suspense fallback={pageLoading}>
+          <AboutView />
+        </Suspense>
       </div>
     );
   }
@@ -152,19 +159,21 @@ export function App() {
       <div className="sg-main sg-main--history">
         <SkipLink />
         {pageHeader}
-        <HistoryView
-          loaded={loaded}
-          error={historyError}
-          events={filtered}
-          allEvents={events}
-          sessions={sessions}
-          filters={filters}
-          onFilters={setFilters}
-          onSelect={select}
-          onExport={download}
-          onClear={clearAll}
-          loadScores={loadScores}
-        />
+        <Suspense fallback={pageLoading}>
+          <HistoryView
+            loaded={loaded}
+            error={historyError}
+            events={filtered}
+            allEvents={events}
+            sessions={sessions}
+            filters={filters}
+            onFilters={setFilters}
+            onSelect={select}
+            onExport={download}
+            onClear={clearAll}
+            loadScores={loadScores}
+          />
+        </Suspense>
         {sheet}
       </div>
     );
