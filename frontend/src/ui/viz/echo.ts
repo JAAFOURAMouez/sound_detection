@@ -22,3 +22,17 @@ export function echoGeometry(
   const { x, y } = polarToCanvas(cx, cy, Math.max(0.08, Math.min(1, value)) * radius, angle);
   return { x, y, r: 3 + event.severity * 3, alpha: Math.max(0.15, 1 - age / ECHO_PERIOD_MS) };
 }
+
+/** Durée de la pulsation qui signale l'arrivée d'un événement. */
+export const PULSE_MS = 1_200;
+
+/**
+ * Pulsation d'apparition : un anneau qui s'élargit et s'efface (pulsation = événement).
+ * Renvoie l'écart au rayon de l'écho et l'opacité, ou null hors de la fenêtre.
+ */
+export function pulseRing(ageMs: number): { spread: number; alpha: number } | null {
+  if (ageMs < 0 || ageMs >= PULSE_MS) return null;
+  const p = ageMs / PULSE_MS;
+  // Sortie rapide puis ralentie (ease-out), extinction linéaire.
+  return { spread: 28 * (1 - (1 - p) ** 3), alpha: 0.8 * (1 - p) };
+}

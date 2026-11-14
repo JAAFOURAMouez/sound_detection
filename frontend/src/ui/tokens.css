@@ -20,6 +20,8 @@
   --sg-phosphor: #4ff0a8;
   --sg-phosphor-dim: #2a8a61;
   --sg-phosphor-glow: rgb(79 240 168 / 0.18);
+  /* Lignes de balayage de l'écran (texture, presque invisible) */
+  --sg-scanline: rgb(255 255 255 / 0.018);
 
   /* Gravité (0 à 3) — usage réservé */
   --sg-severity-0: #8b9cab;

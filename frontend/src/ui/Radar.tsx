@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { SoundEvent } from '../events/types';
 import { t } from '../i18n';
 import { eventColorKey, familyColor } from './eventFormat';
-import { echoGeometry, ECHO_PERIOD_MS } from './viz/echo';
+import { echoGeometry, ECHO_PERIOD_MS, pulseRing } from './viz/echo';
 import { RADAR_PERIOD_SECONDS, RADAR_RINGS, RADAR_TICKS } from './viz/config';
 import { angleForTime, polarToCanvas } from './viz/radarGeometry';
 import { type CanvasFrame, prefersReducedMotion, useCanvasLoop } from './useCanvasLoop';
@@ -215,6 +215,24 @@ export function Radar({
     }
     ctx.drawImage(layer, 0, 0, width, height);
 
+    // Pulsation = événement : un anneau s'élargit autour de chaque nouvel écho.
+    if (!reduced) {
+      for (const event of eventsRef.current) {
+        const pulse = pulseRing(current - event.start);
+        if (!pulse) continue;
+        const g = echoGeometry(event, current, cx, cy, radius);
+        if (!g) continue;
+        ctx.strokeStyle = familyColor(eventColorKey(event));
+        ctx.globalAlpha = pulse.alpha;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(g.x, g.y, g.r + pulse.spread, 0, 2 * Math.PI);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 1;
+    }
+
     if (!sweeping) return;
 
     // Balayage : l'aiguille marque l'instant présent (même horloge que les échos), une traînée
@@ -243,7 +261,25 @@ export function Radar({
     ctx.stroke();
   };
 
-  useCanvasLoop(canvasRef, draw, (sweeping && !reduced) || calibration !== null);
+  // Mouvement réduit : balayage figé, mais le cadran se met à jour une fois par seconde
+  // (apparition et effacement des échos par simple fondu).
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!reduced || !sweeping) return;
+    const id = setInterval(() => {
+      setTick((n) => n + 1);
+    }, 1_000);
+    return () => {
+      clearInterval(id);
+    };
+  }, [reduced, sweeping]);
+  useCanvasLoop(
+    canvasRef,
+    draw,
+    (sweeping && !reduced) || calibration !== null,
+    undefined,
+    reduced ? `${String(events.length)}:${String(tick)}` : undefined,
+  );
 
   return (
     <figure className="sg-radar" aria-labelledby="radar-title" aria-describedby="radar-desc">

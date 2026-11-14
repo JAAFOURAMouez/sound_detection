@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { echoGeometry } from './echo';
+import { echoGeometry, PULSE_MS, pulseRing } from './echo';
 
 const base = { severity: 2 as const, scoreMax: 0.5, confidence: 0, type: 'unknown' as const };
 
@@ -21,5 +21,15 @@ describe('échos du radar', () => {
     const major = echoGeometry({ ...base, severity: 3, start: t, end: t }, t, 0, 0, 50);
     expect(major?.r ?? 0).toBeGreaterThan(minor?.r ?? 0);
     expect(echoGeometry({ ...base, start: t, end: t }, t + 61_000, 0, 0, 50)).toBeNull();
+  });
+
+  it('signale l’arrivée d’un événement par une pulsation brève qui s’élargit et s’éteint', () => {
+    const start = pulseRing(0);
+    const mid = pulseRing(PULSE_MS / 2);
+    expect(start).toEqual({ spread: 0, alpha: 0.8 });
+    expect(mid?.spread ?? 0).toBeGreaterThan(0);
+    expect(mid?.alpha ?? 1).toBeLessThan(0.8);
+    expect(pulseRing(PULSE_MS)).toBeNull();
+    expect(pulseRing(-1)).toBeNull();
   });
 });

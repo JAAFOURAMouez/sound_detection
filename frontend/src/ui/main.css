@@ -5,6 +5,19 @@
   background: var(--sg-bg);
 }
 
+/* Lignes de balayage très légères, comme sur l'écran d'un instrument (couche fixe, sans
+   animation, coupée si l'utilisateur demande moins de mouvement). */
+@media (prefers-reduced-motion: no-preference) {
+  .sg-main::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, var(--sg-scanline) 2px 3px);
+  }
+}
+
 .sg-panel-title {
   margin: 0;
   display: block;
@@ -668,6 +681,14 @@
 .sg-journal__list > li {
   content-visibility: auto;
   contain-intrinsic-size: auto 1.75rem;
+  /* Apparition par simple fondu (aussi en mouvement réduit). */
+  animation: sg-fade-in 400ms ease-out;
+}
+
+@keyframes sg-fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .sg-journal__row {
