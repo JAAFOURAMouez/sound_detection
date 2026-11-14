@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import SecretStr
@@ -8,7 +9,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Configuration lue depuis l'environnement (ou backend/.env en local)."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # backend/.env, quel que soit le dossier d'où le serveur est lancé.
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parent.parent / ".env", extra="ignore"
+    )
 
     llm_provider: Literal["mock", "groq", "ollama"] = "mock"
     llm_model: str = ""
