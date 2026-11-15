@@ -64,6 +64,11 @@ function knownTrigger(frame: Frame, cfg: EventEngineConfig) {
   return d && d.severity >= cfg.knownSeverity && d.score >= cfg.knownConfidence ? d : null;
 }
 
+/** Une autre famille critique que celle de l'événement : c'est un autre son, pas sa suite. */
+function otherFamily(event: SoundEvent, known: ReturnType<typeof knownTrigger>): boolean {
+  return known !== null && event.type === 'known' && event.family !== known.family;
+}
+
 function absorb(event: SoundEvent, frame: Frame, cfg: EventEngineConfig): SoundEvent {
   const known = knownTrigger(frame, cfg);
   const next: SoundEvent = {
@@ -141,15 +146,26 @@ export function step(
   const active = known !== null || anomalous;
   const calm = known === null && (frame.score === null || frame.score < cfg.closeScore);
 
-  if (state.open) {
+  let open = state.open;
+  let lastClosed = state.lastClosed;
+  if (open && otherFamily(open, known)) {
+    // Verre puis sirène sans calme entre les deux : on clôt le verre et on ouvre la sirène.
+    const closed = { ...open, closed: true };
+    changes.push({ kind: 'closed', event: closed });
+    next = { ...next, open: null, calmFrames: 0, lastClosed: closed };
+    open = null;
+    lastClosed = null;
+  }
+
+  if (open) {
     if (active) {
-      next.open = absorb(state.open, frame, cfg);
+      next.open = absorb(open, frame, cfg);
       next.calmFrames = 0;
       changes.push({ kind: 'updated', event: next.open });
     } else if (calm) {
       next.calmFrames = state.calmFrames + 1;
       if (next.calmFrames >= cfg.closeFrames) {
-        const closed = { ...state.open, closed: true };
+        const closed = { ...open, closed: true };
         changes.push({ kind: 'closed', event: closed });
         next = { ...next, open: null, calmFrames: 0, lastClosed: closed };
       }
@@ -162,8 +178,8 @@ export function step(
 
   if (!active) return { state: next, changes };
 
-  const last = state.lastClosed;
-  if (last && frame.t - last.end <= cfg.mergeGapMs) {
+  const last = lastClosed;
+  if (last && frame.t - last.end <= cfg.mergeGapMs && !otherFamily(last, known)) {
     // Fusion : on rouvre l'événement précédent.
     next.open = absorb({ ...last, closed: false }, frame, cfg);
     next.lastClosed = null;

@@ -112,6 +112,30 @@ describe('moteur d’événements', () => {
     expect(r.closed.at(-1)?.scoreMax).toBe(0.8);
   });
 
+  it('sépare deux sons critiques différents qui se suivent sans calme', () => {
+    const siren = { family: 'alarm', score: 0.95, severity: 3 as Severity };
+    const r = run(
+      frames([
+        ...calm(2),
+        { dominant: glass, score: 0.8 },
+        { score: 0.45 },
+        { dominant: siren, score: 0.9 },
+        ...calm(4),
+      ]),
+    );
+    expect(r.opened.map((e) => e.family)).toEqual(['glass', 'alarm']);
+    expect(r.closed.map((e) => e.family)).toEqual(['glass', 'alarm']);
+    expect(r.closed[0]?.severity).toBe(2);
+  });
+
+  it('ne fusionne pas deux sons critiques différents, même rapprochés', () => {
+    const siren = { family: 'alarm', score: 0.95, severity: 3 as Severity };
+    const r = run(
+      frames([...calm(2), { dominant: glass }, ...calm(3), { dominant: siren }, ...calm(4)]),
+    );
+    expect(r.opened.map((e) => e.family)).toEqual(['glass', 'alarm']);
+  });
+
   it('sépare deux pics distants de 3 s', () => {
     const r = run(frames([...calm(2), { score: 0.8 }, ...calm(6), { score: 0.7 }, ...calm(4)]));
     expect(r.opened).toHaveLength(2);
