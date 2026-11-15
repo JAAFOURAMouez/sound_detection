@@ -49,7 +49,11 @@ function setup(api: Partial<AssistantApi> = {}) {
         })),
   );
   const store = createAssistantStore({
-    api: { health: api.health ?? (() => Promise.resolve(true)), chat },
+    api: {
+      health: api.health ?? (() => Promise.resolve(true)),
+      chat,
+      report: () => Promise.reject(new Error('non utilisé')),
+    },
     speaker: () => speaker,
     recognition: null,
     mute,

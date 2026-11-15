@@ -88,3 +88,33 @@ describe('createApi', () => {
     expect(await down.health()).toBe(false);
   });
 });
+
+describe('rapport de session', () => {
+  const payload = { events: [], session_minutes: 3 };
+
+  it('envoie les métadonnées et lit la synthèse du backend', async () => {
+    const fetchImpl = vi.fn(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ summary: 'Calme.', highlights: ['22:04 — verre', 3] })),
+      ),
+    );
+    const api = createApi('https://api.example', fetchImpl);
+    await expect(api.report(payload)).resolves.toEqual({
+      summary: 'Calme.',
+      highlights: ['22:04 — verre'],
+      fallback: false,
+    });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://api.example/api/report',
+      expect.objectContaining({ method: 'POST', body: JSON.stringify(payload) }),
+    );
+  });
+
+  it('échoue proprement sans backend ou sur une réponse inattendue', async () => {
+    await expect(createApi(undefined).report(payload)).rejects.toThrow();
+    const bad = createApi('https://api.example', () =>
+      Promise.resolve(new Response(JSON.stringify({ text: '?' }))),
+    );
+    await expect(bad.report(payload)).rejects.toThrow('inattendue');
+  });
+});

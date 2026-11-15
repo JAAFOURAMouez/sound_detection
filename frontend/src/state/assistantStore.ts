@@ -17,6 +17,7 @@ import {
   type Speaker,
 } from '../assistant/speech';
 import { fallbackAnswer } from '../assistant/templates';
+import { localReport, type ReportPayload, type SessionReport } from '../events/report';
 import type { SoundEvent } from '../events/types';
 import { historyStore } from './historyStore';
 import { recorder } from './services';
@@ -177,9 +178,10 @@ export function createAssistantStore(deps: AssistantDeps) {
 }
 
 const apiUrl = import.meta.env.VITE_API_URL;
+const sharedApi = createApi(apiUrl);
 
 export const assistantStore = createAssistantStore({
-  api: createApi(apiUrl),
+  api: sharedApi,
   speaker: (enabled) => createSpeaker(undefined, { enabled }),
   recognition: typeof window === 'undefined' ? null : recognitionConstructor(window),
   mute: (muted) => {
@@ -220,4 +222,16 @@ recorder.subscribe((changes) => {
 
 export function useAssistantStore<T>(selector: (state: AssistantState) => T): T {
   return useStore(assistantStore, selector);
+}
+
+/** Rapport de session rédigé par le backend, ou synthèse locale s'il ne répond pas. */
+export async function requestReport(payload: ReportPayload): Promise<SessionReport> {
+  try {
+    const report = await sharedApi.report(payload);
+    assistantStore.setState({ backend: 'online' });
+    return report;
+  } catch {
+    assistantStore.setState({ backend: 'offline' });
+    return localReport(payload);
+  }
 }

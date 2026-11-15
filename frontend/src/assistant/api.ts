@@ -1,11 +1,14 @@
 // Client du backend de dialogue : seules des métadonnées d'événements sont envoyées.
 
+import type { ReportPayload, SessionReport } from '../events/report';
 import type { SoundEvent } from '../events/types';
 import { familyLabel } from '../ui/labels';
 import type { Turn } from './machine';
 import type { AssistantAnswer } from './templates';
 
 export const CHAT_TIMEOUT_MS = 8_000;
+/** Un rapport demande une réponse plus longue au LLM (et le backend peut être en train de se réveiller). */
+export const REPORT_TIMEOUT_MS = 25_000;
 
 export interface ChatPayload {
   event: {
@@ -61,20 +64,26 @@ export function toChatPayload(event: SoundEvent, history: Turn[], message: strin
 export interface AssistantApi {
   health(): Promise<boolean>;
   chat(payload: ChatPayload): Promise<AssistantAnswer>;
+  report(payload: ReportPayload): Promise<SessionReport>;
 }
 
 export function createApi(
   baseUrl: string | undefined,
   fetchImpl: typeof fetch = (...args) => fetch(...args),
   timeoutMs = CHAT_TIMEOUT_MS,
+  reportTimeoutMs = REPORT_TIMEOUT_MS,
 ): AssistantApi {
   const url = (path: string) => `${(baseUrl ?? '').replace(/\/$/, '')}${path}`;
-  async function call(path: string, init: RequestInit = {}): Promise<Response> {
+  async function call(
+    path: string,
+    init: RequestInit = {},
+    timeout = timeoutMs,
+  ): Promise<Response> {
     if (!baseUrl) throw new Error('Aucun backend configuré');
     const controller = new AbortController();
     const timer = setTimeout(() => {
       controller.abort();
-    }, timeoutMs);
+    }, timeout);
     try {
       return await fetchImpl(url(path), { ...init, signal: controller.signal });
     } finally {
@@ -109,6 +118,27 @@ export function createApi(
         reply: data.reply,
         recommendation: data.recommendation,
         severity: data.severity,
+        fallback: data.fallback === true,
+      };
+    },
+    async report(payload) {
+      const response = await call(
+        '/api/report',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+        reportTimeoutMs,
+      );
+      if (!response.ok) throw new Error(`Backend : ${String(response.status)}`);
+      const data = (await response.json()) as Partial<SessionReport>;
+      if (typeof data.summary !== 'string' || !Array.isArray(data.highlights)) {
+        throw new Error('Réponse du backend inattendue');
+      }
+      return {
+        summary: data.summary,
+        highlights: data.highlights.filter((h): h is string => typeof h === 'string'),
         fallback: data.fallback === true,
       };
     },
