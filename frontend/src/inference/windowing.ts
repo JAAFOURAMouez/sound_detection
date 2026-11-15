@@ -24,6 +24,11 @@ export class SlidingWindow {
     this.nextEnd = size;
   }
 
+  /** Échantillons reçus depuis la création (ou la remise à zéro). */
+  get received(): number {
+    return this.total;
+  }
+
   /** Ajoute un bloc et renvoie les fenêtres complètes qu'il a rendues disponibles. */
   push(chunk: Float32Array): AudioWindow[] {
     const windows: AudioWindow[] = [];

@@ -71,6 +71,18 @@ describe('AnalysisEngine', () => {
     expect(results[0]?.dominant?.family).toBe('ambient');
   });
 
+  it('date les fenêtres dans le repère du flux, même après un changement de classifieur', async () => {
+    const { engine, events } = setup();
+    const chunk = noise(1, 0.02).subarray(0, 8_000);
+    // Le flux commence à 100 000 (position donnée par le thread principal).
+    for (let i = 0; i < 4; i++) await engine.push(chunk, 100_000 + i * 8_000);
+    engine.setClassifier(classifier);
+    for (let i = 4; i < 8; i++) await engine.push(chunk, 100_000 + i * 8_000);
+    const ends = events.flatMap((e) => (e.type === 'result' ? [e.windowEndSample] : []));
+    // 116 000, 124 000, 132 000 ; puis, après le changement, le nouveau tampon se remplit.
+    expect(ends).toEqual([116_000, 124_000, 132_000, 148_000, 156_000, 164_000]);
+  });
+
   it('calibre, puis ne déclenche pas d’alerte sur la même ambiance', async () => {
     const { engine, events } = setup();
     engine.startCalibration(20);

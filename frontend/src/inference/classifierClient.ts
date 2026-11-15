@@ -37,6 +37,7 @@ export class ClassifierClient {
   private readonly errorListeners = new Set<(message: string) => void>();
   private ready: Promise<LoadInfo> | null = null;
   private readonly now: () => number;
+  private sent = 0;
 
   constructor(
     worker: WorkerLike = createInferenceWorker(),
@@ -113,10 +114,20 @@ export class ClassifierClient {
     return () => this.errorListeners.delete(listener);
   }
 
+  /**
+   * Échantillons envoyés depuis la création du client. Ne revient jamais à zéro : les
+   * positions des fenêtres (`windowEndSample`) restent comparables d'une reprise à l'autre.
+   */
+  get position(): number {
+    return this.sent;
+  }
+
   /** Envoie un bloc 16 kHz ; il est copié pour ne pas priver le tampon circulaire de ses données. */
   push(samples: Float32Array): void {
     const copy = samples.slice();
-    this.worker.postMessage({ type: 'audio', samples: copy }, [copy.buffer]);
+    const start = this.sent;
+    this.sent += copy.length;
+    this.worker.postMessage({ type: 'audio', samples: copy, start }, [copy.buffer]);
   }
 
   calibrate(seconds: number): void {

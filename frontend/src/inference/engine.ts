@@ -90,6 +90,7 @@ export class AnalysisEngine {
   private readonly gate: ThresholdGate;
   private lastFamily: string | null = null;
   private queue: Promise<void> = Promise.resolve();
+  private nextStart = 0;
 
   constructor(emit: (event: EngineEvent) => void, options: Partial<EngineOptions> = {}) {
     this.opts = { ...DEFAULT_ENGINE_OPTIONS, ...options };
@@ -136,16 +137,23 @@ export class AnalysisEngine {
     this.smoother.reset();
   }
 
-  /** Ajoute un bloc 16 kHz ; le traitement est sérialisé pour garder l'ordre des fenêtres. */
-  push(samples: Float32Array): Promise<void> {
-    this.queue = this.queue.then(() => this.process(samples));
+  /**
+   * Ajoute un bloc 16 kHz ; le traitement est sérialisé pour garder l'ordre des fenêtres.
+   * `start` est la position du bloc dans le flux : les fenêtres sont datées dans ce repère
+   * (`windowEndSample`), même après un changement de classifieur ou une remise à zéro.
+   */
+  push(samples: Float32Array, start = this.nextStart): Promise<void> {
+    this.nextStart = start + samples.length;
+    this.queue = this.queue.then(() => this.process(samples, start));
     return this.queue;
   }
 
-  private async process(samples: Float32Array): Promise<void> {
+  private async process(samples: Float32Array, start: number): Promise<void> {
     const classifier = this.classifier;
-    if (classifier && this.classWindows) {
-      for (const w of this.classWindows.push(samples)) {
+    const classWindows = this.classWindows;
+    if (classifier && classWindows) {
+      const before = classWindows.received;
+      for (const w of classWindows.push(samples)) {
         const t0 = performance.now();
         const scores = await classifier.scores(w.samples);
         const result = classify(scores, classifier.table, {
@@ -158,18 +166,20 @@ export class AnalysisEngine {
           type: 'result',
           model: classifier.kind,
           ...result,
-          windowEndSample: w.endSample,
+          windowEndSample: start + w.endSample - before,
           inferenceMs: performance.now() - t0,
         });
       }
     }
 
     const anomaly = this.anomaly;
-    if (anomaly && this.anomalyWindows) {
-      for (const w of this.anomalyWindows.push(samples)) {
+    const anomalyWindows = this.anomalyWindows;
+    if (anomaly && anomalyWindows) {
+      const before = anomalyWindows.received;
+      for (const w of anomalyWindows.push(samples)) {
         const output = await anomaly.analyse(w.samples);
         const levelDb = toDbfs(computeRms(w.samples));
-        this.handleAnomaly(output, levelDb, w.endSample);
+        this.handleAnomaly(output, levelDb, start + w.endSample - before);
       }
     }
   }

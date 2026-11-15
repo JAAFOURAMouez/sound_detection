@@ -102,7 +102,7 @@ scope.onmessage = (event: MessageEvent<MainToWorker>) => {
       engine.startCalibration(message.seconds);
       break;
     case 'audio':
-      engine.push(message.samples).catch((error: unknown) => {
+      engine.push(message.samples, message.start).catch((error: unknown) => {
         post({ type: 'error', message: String(error) });
       });
       break;

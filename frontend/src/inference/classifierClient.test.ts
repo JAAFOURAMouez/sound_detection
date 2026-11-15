@@ -114,4 +114,15 @@ describe('ClassifierClient', () => {
     }
     expect(sent[1]).toEqual({ type: 'calibrate', seconds: 30 });
   });
+
+  it('date chaque bloc dans le flux, sans revenir à zéro après une remise à zéro', () => {
+    const { worker, sent } = fakeWorker();
+    const client = new ClassifierClient(worker);
+    client.push(new Float32Array(1_600));
+    client.reset();
+    client.push(new Float32Array(800));
+    const starts = sent.flatMap((m) => (m.type === 'audio' ? [m.start] : []));
+    expect(starts).toEqual([0, 1_600]);
+    expect(client.position).toBe(2_400);
+  });
 });

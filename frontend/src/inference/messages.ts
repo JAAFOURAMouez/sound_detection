@@ -7,7 +7,8 @@ export type MainToWorker =
   | { type: 'init'; baseUrl: string; classifier: ClassifierKind }
   | { type: 'setClassifier'; kind: ClassifierKind }
   | { type: 'calibrate'; seconds: number }
-  | { type: 'audio'; samples: Float32Array }
+  /** `start` : position du premier échantillon dans le flux (compté côté thread principal). */
+  | { type: 'audio'; samples: Float32Array; start: number }
   | { type: 'reset' };
 
 export interface LoadInfo {
