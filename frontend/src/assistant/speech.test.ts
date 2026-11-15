@@ -35,6 +35,37 @@ describe('synthèse vocale', () => {
     vi.unstubAllGlobals();
   });
 
+  it('n’abandonne pas la voix tant que le navigateur dit encore parler', async () => {
+    vi.useFakeTimers();
+    const synth = {
+      speaking: true,
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      getVoices: () => [],
+    };
+    vi.stubGlobal(
+      'SpeechSynthesisUtterance',
+      class {
+        lang = '';
+        voice = null;
+        onend = null;
+        onerror = null;
+        constructor(public text: string) {}
+      },
+    );
+    const speaker = createSpeaker(synth as unknown as SpeechSynthesis);
+    let done = false;
+    void speaker.speak('Bonjour').then(() => {
+      done = true;
+    });
+    await vi.advanceTimersByTimeAsync(10_000);
+    expect(done).toBe(false); // l'estimation est dépassée, mais la voix sort encore
+    synth.speaking = false;
+    await vi.advanceTimersByTimeAsync(300);
+    expect(done).toBe(true);
+    vi.unstubAllGlobals();
+  });
+
   it('ne parle pas quand la voix est coupée, et peut être interrompu', async () => {
     const speak = vi.fn();
     const synth = {

@@ -11,6 +11,10 @@ export function estimatedSpeechMs(text: string): number {
   return 1_200 + text.length * 65;
 }
 
+/** Au-delà, on rend la main même si le navigateur dit encore parler (voix bloquée). */
+export const MAX_SPEECH_MS = 60_000;
+const SPEAKING_POLL_MS = 250;
+
 export function createSpeaker(
   synth: SpeechSynthesis | undefined = typeof speechSynthesis === 'undefined'
     ? undefined
@@ -23,6 +27,7 @@ export function createSpeaker(
     speak(text) {
       return new Promise<void>((resolve) => {
         let done = false;
+        let timer: ReturnType<typeof setTimeout> | undefined;
         const end = () => {
           if (done) return;
           done = true;
@@ -32,12 +37,21 @@ export function createSpeaker(
         };
         finish = end;
         const silent = !synth || !options.enabled();
-        // Sans voix, on laisse le temps de lire le texte affiché.
-        const timer = setTimeout(
-          end,
-          silent ? Math.min(2_500, estimatedSpeechMs(text) / 2) : estimatedSpeechMs(text) + 2_000,
-        );
-        if (silent) return;
+        if (silent) {
+          // Sans voix, on laisse le temps de lire le texte affiché.
+          timer = setTimeout(end, Math.min(2_500, estimatedSpeechMs(text) / 2));
+          return;
+        }
+        // Secours si « end » ne vient pas (fréquent avec certaines voix de Chrome) : tant que le
+        // navigateur parle encore, on attend — rendre la main trop tôt lèverait la sourdine
+        // de la détection pendant que la voix sort encore des haut-parleurs.
+        const startedAt = Date.now();
+        const check = () => {
+          if (synth.speaking && Date.now() - startedAt < MAX_SPEECH_MS) {
+            timer = setTimeout(check, SPEAKING_POLL_MS);
+          } else end();
+        };
+        timer = setTimeout(check, estimatedSpeechMs(text) + 2_000);
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = lang;
         const voice = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith('fr'));
