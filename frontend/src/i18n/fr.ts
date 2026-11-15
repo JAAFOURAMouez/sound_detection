@@ -233,6 +233,16 @@ export const fr = {
     deleted: 'Historique supprimé.',
     privacy: 'Tout est stocké dans ce navigateur uniquement. Conservation : 30 jours.',
   },
+  report: {
+    title: 'Rapport de session',
+    privacy:
+      'Synthèse écrite de la session choisie. Seules les métadonnées des événements (type, famille, gravité, heure, durée, note) sont envoyées, jamais l’audio.',
+    generate: 'Rédiger le rapport',
+    again: 'Rédiger à nouveau',
+    loading: 'Rédaction en cours…',
+    remote: 'Rédigé par l’assistant en ligne.',
+    local: 'Synthèse locale : l’assistant en ligne n’a pas répondu.',
+  },
   live: {
     title: 'Classes en direct',
     waiting: 'Analyse en attente du premier son…',

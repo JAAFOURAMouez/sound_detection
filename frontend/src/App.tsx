@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { t } from './i18n';
 import { useAppStore } from './state/appStore';
-import { assistantStore, useAssistantStore } from './state/assistantStore';
+import { assistantStore, requestReport, useAssistantStore } from './state/assistantStore';
 import { TransmissionLine } from './ui/TransmissionLine';
 import { filterEvents, historyStore, useHistoryStore, type View } from './state/historyStore';
 import { eventStore, recorder } from './state/services';
@@ -172,6 +172,7 @@ export function App() {
             onExport={download}
             onClear={clearAll}
             loadScores={loadScores}
+            onReport={requestReport}
           />
         </Suspense>
         {sheet}

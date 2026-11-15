@@ -3,9 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { SessionRecord } from '../events/db';
 import type { EventType, SoundEvent } from '../events/types';
 import { t } from '../i18n';
+import type { ReportPayload, SessionReport } from '../events/report';
 import { ALL_TYPES, type HistoryFilters } from '../state/historyStore';
 import { eventColorKey, eventLabel, familyColor, formatDateTime, formatTime } from './eventFormat';
 import { familyLabel } from './labels';
+import { SessionReportPanel } from './SessionReportPanel';
 import { type CanvasFrame, useCanvasLoop } from './useCanvasLoop';
 
 interface HistoryViewProps {
@@ -20,6 +22,7 @@ interface HistoryViewProps {
   onExport: (format: 'json' | 'csv') => void;
   onClear: () => Promise<void>;
   loadScores: (sessionId: string) => Promise<{ t: number; score: number }[]>;
+  onReport: (payload: ReportPayload) => Promise<SessionReport>;
 }
 
 function cssVar(name: string, fallback: string) {
@@ -164,6 +167,7 @@ export function HistoryView({
   onExport,
   onClear,
   loadScores,
+  onReport,
 }: HistoryViewProps) {
   const [confirming, setConfirming] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -195,6 +199,11 @@ export function HistoryView({
     [allEvents],
   );
   const maxCount = Math.max(1, ...families.map(([, n]) => n));
+  const session = sessions.find((s) => s.id === currentSession) ?? null;
+  const sessionEvents = useMemo(
+    () => allEvents.filter((e) => e.sessionId === currentSession),
+    [allEvents, currentSession],
+  );
 
   if (!loaded) return <p className="sg-history__note">{t.history.loading}</p>;
 
@@ -330,6 +339,7 @@ export function HistoryView({
               )}
             </section>
           </section>
+          <SessionReportPanel session={session} events={sessionEvents} onReport={onReport} />
           <section aria-label={t.main.journal} className="sg-history__list">
             <ol>
               {events

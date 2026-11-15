@@ -38,6 +38,7 @@ function renderView(events: SoundEvent[], overrides = {}) {
     onExport: vi.fn(),
     onClear: vi.fn(() => Promise.resolve()),
     loadScores: vi.fn(() => Promise.resolve([])),
+    onReport: vi.fn(() => Promise.resolve({ summary: '', highlights: [], fallback: true })),
     ...overrides,
   };
   render(<HistoryView {...props} />);

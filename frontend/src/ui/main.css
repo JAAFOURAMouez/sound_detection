@@ -1194,6 +1194,38 @@
   grid-template-columns: 11rem 10rem 1fr;
 }
 
+/* Rapport de session : un relevé écrit, bordé comme les autres panneaux, sans carte. */
+.sg-report {
+  display: grid;
+  gap: var(--sg-space-2);
+  justify-items: start;
+  padding: var(--sg-space-3);
+  border: var(--sg-stroke) solid var(--sg-grid);
+  border-left: 3px solid var(--sg-phosphor);
+}
+
+.sg-report__body {
+  max-width: 72ch;
+  line-height: 1.55;
+}
+
+.sg-report__body p,
+.sg-report__body ul {
+  margin: 0 0 var(--sg-space-2);
+}
+
+.sg-report__body ul {
+  padding-left: var(--sg-space-4);
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-sm);
+}
+
+.sg-report__source {
+  color: var(--sg-text-dim);
+  font-family: var(--sg-font-data);
+  font-size: var(--sg-text-xs);
+}
+
 .sg-history__actions {
   display: flex;
   flex-wrap: wrap;

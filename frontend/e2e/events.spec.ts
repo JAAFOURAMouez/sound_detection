@@ -158,6 +158,31 @@ test.describe('événements et historique', () => {
     expect(history.fps).toBeGreaterThanOrEqual(55);
   });
 
+  test('rapport de session : rédigé par le backend, ou localement sans lui', async ({ page }) => {
+    await startDemo(page);
+    await page.getByRole('button', { name: fr.demo.samples['alarm-siren'] }).click();
+    await expect(
+      page.getByRole('list', { name: fr.events.journalLabel }).getByRole('button').first(),
+    ).toBeVisible({ timeout: 15_000 });
+    await page.getByRole('link', { name: fr.nav.history }).click();
+
+    // Seules des métadonnées partent : on inspecte la requête envoyée au backend.
+    const sent = page.waitForRequest('**/api/report');
+    await page.getByRole('button', { name: fr.report.generate }).click();
+    const body = (await sent).postDataJSON() as { events: Record<string, unknown>[] };
+    console.log(`rapport envoyé : ${JSON.stringify(body.events[0])}`);
+    expect(Object.keys(body.events[0] ?? {}).sort()).toEqual(
+      ['duration_s', 'family', 'family_label', 'note', 'severity', 'started_at', 'type'].sort(),
+    );
+    await expect(page.getByText(fr.report.remote)).toBeVisible({ timeout: 15_000 });
+    console.log(`rapport : ${String(await page.getByTestId('report-summary').textContent())}`);
+
+    await page.route('**/api/**', (route) => route.abort());
+    await page.getByRole('button', { name: fr.report.again }).click();
+    await expect(page.getByText(fr.report.local)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('report-summary')).toContainText('pendant la session');
+  });
+
   test('l’historique peut être exporté puis entièrement supprimé', async ({ page }) => {
     await startDemo(page);
     await page.getByRole('button', { name: fr.demo.samples['alarm-siren'] }).click();
