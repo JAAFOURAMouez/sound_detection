@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { sine } from '../test/signals';
-import { computePeak, computeRms, DB_FLOOR, LevelSmoother, toDbfs } from './level';
+import {
+  computePeak,
+  computeRms,
+  DB_FLOOR,
+  LevelSmoother,
+  REPLAY_MAX_GAIN,
+  replayGain,
+  toDbfs,
+} from './level';
 
 describe('niveau', () => {
   it('une sinusoïde pleine échelle vaut −3,01 dBFS en RMS et 0 dBFS en crête', () => {
@@ -37,5 +45,14 @@ describe('LevelSmoother', () => {
   it('suit immédiatement si la constante de temps est nulle', () => {
     const s = new LevelSmoother({ attack: 0, release: 0 });
     expect(s.step(-42, 0.016)).toBe(-42);
+  });
+});
+
+describe('gain de réécoute', () => {
+  it('amplifie un son faible vers une crête confortable, sans saturer ni exagérer', () => {
+    expect(replayGain(sine(1_000, 16_000, 0.5, 0.07))).toBeCloseTo(10, 1);
+    expect(replayGain(sine(1_000, 16_000, 0.5, 0.9))).toBe(1);
+    expect(replayGain(sine(1_000, 16_000, 0.5, 0.0001))).toBe(REPLAY_MAX_GAIN);
+    expect(replayGain(new Float32Array(100))).toBe(1);
   });
 });

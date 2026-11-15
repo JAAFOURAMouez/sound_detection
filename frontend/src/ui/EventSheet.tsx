@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { replayGain } from '../audio/level';
 import type { SoundEvent } from '../events/types';
 import { t } from '../i18n';
 import { eventColorKey, eventLabel, formatDateTime } from './eventFormat';
@@ -18,7 +19,10 @@ function playClip(clip: Float32Array) {
   buffer.copyToChannel(Float32Array.from(clip), 0);
   const source = ctx.createBufferSource();
   source.buffer = buffer;
-  source.connect(ctx.destination);
+  const gain = ctx.createGain();
+  gain.gain.value = replayGain(clip);
+  source.connect(gain);
+  gain.connect(ctx.destination);
   source.onended = () => void ctx.close();
   source.start();
 }

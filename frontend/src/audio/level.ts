@@ -59,3 +59,17 @@ export class LevelSmoother {
     return this.value;
   }
 }
+
+/** Crête visée à la réécoute, et gain maximal (+30 dB) pour ne pas gonfler le bruit de fond. */
+export const REPLAY_TARGET_PEAK = 0.7;
+export const REPLAY_MAX_GAIN = 32;
+
+/**
+ * Gain de réécoute : un son capté de loin par le micro (−40 dBFS) serait presque inaudible
+ * tel quel. On le ramène vers une crête confortable, sans jamais saturer.
+ */
+export function replayGain(samples: ArrayLike<number>): number {
+  const peak = computePeak(samples);
+  if (peak <= 0) return 1;
+  return Math.max(1, Math.min(REPLAY_MAX_GAIN, REPLAY_TARGET_PEAK / peak));
+}
