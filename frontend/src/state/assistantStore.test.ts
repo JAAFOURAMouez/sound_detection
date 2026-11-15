@@ -62,6 +62,8 @@ function setup(api: Partial<AssistantApi> = {}) {
     identify,
     now: () => 100_000,
     muteTailMs: 10,
+    wakeRetryMs: 1,
+    wakeAttempts: 3,
   });
   const finishSpeech = async () => {
     resolveSpeech();
@@ -125,9 +127,25 @@ describe('assistantStore', () => {
   });
 
   it('réveille le backend et reflète son état', async () => {
-    const { store } = setup({ health: () => Promise.resolve(false) });
+    const health = vi.fn(() => Promise.resolve(false));
+    const { store } = setup({ health });
     await store.getState().wake();
     expect(store.getState().backend).toBe('offline');
+    expect(health).toHaveBeenCalledTimes(3);
+  });
+
+  it('relance le réveil jusqu’à ce que le serveur gratuit ait démarré', async () => {
+    const answers = [false, false, true];
+    const health = vi.fn(() => Promise.resolve(answers.shift() ?? true));
+    const { store } = setup({ health });
+    const seen: string[] = [];
+    store.subscribe((state) => {
+      if (seen.at(-1) !== state.backend) seen.push(state.backend);
+    });
+    await store.getState().wake();
+    expect(seen).toEqual(['waking', 'offline', 'online']);
+    expect(store.getState().backend).toBe('online');
+    expect(health).toHaveBeenCalledTimes(3);
   });
 
   it('indique l’absence de dictée', () => {
