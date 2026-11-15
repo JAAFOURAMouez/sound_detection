@@ -5,6 +5,8 @@ const API_PORT = 8000;
 
 export default defineConfig({
   testDir: './e2e',
+  // Le site publié a sa propre configuration (playwright.public.config.ts).
+  testIgnore: 'public/**',
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,

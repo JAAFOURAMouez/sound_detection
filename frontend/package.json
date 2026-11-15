@@ -19,6 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:public": "playwright test -c playwright.public.config.ts",
     "lint": "eslint .",
     "typecheck": "tsc -b && tsc -p e2e",
     "format": "prettier --write .",

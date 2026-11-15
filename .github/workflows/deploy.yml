@@ -1,0 +1,87 @@
+name: Déploiement
+
+# Publie le frontend sur GitHub Pages quand la CI est verte sur main, puis vérifie le site
+# publié dans un navigateur vierge (démonstration sans micro ni backend).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+        env:
+          VITE_BASE: /${{ github.event.repository.name }}/
+          # URL publique du backend (variable du dépôt, pas un secret).
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+      - name: Aucun secret dans le bundle
+        run: |
+          if grep -rIEn "gsk_[A-Za-z0-9]{8,}|GROQ_API_KEY|LLM_API_KEY" dist; then
+            echo "Secret ou nom de variable sensible trouvé dans dist/" >&2
+            exit 1
+          fi
+      # Routage par ancre (#historique) : 404.html ne sert qu'aux adresses mal tapées.
+      - run: cp dist/index.html dist/404.html
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: frontend/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5.0.1
+
+  verify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Site publié, navigateur vierge, ordinateur et téléphone
+        run: npm run test:public
+        env:
+          PUBLIC_URL: ${{ needs.deploy.outputs.url }}
