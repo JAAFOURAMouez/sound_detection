@@ -47,6 +47,8 @@
   --sg-family-other: #a2b1bf;
   --sg-family-unknown: #f2f6f8;
   --sg-family-drift: #6f8293;
+  /* Son inconnu du modèle, identifié par l'utilisateur au dialogue. */
+  --sg-family-identified: #4ff0a8;
 
   /* Espacements (base 4 px) */
   --sg-space-1: 0.25rem;
@@ -121,6 +123,7 @@
   --sg-family-other: #54625c;
   --sg-family-unknown: #17231f;
   --sg-family-drift: #54625c;
+  --sg-family-identified: #0b6e47;
 }
 
 @media (prefers-reduced-motion: reduce) {

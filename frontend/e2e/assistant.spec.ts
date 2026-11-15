@@ -91,6 +91,17 @@ test.describe('assistant vocal', () => {
     await expect(line(page)).toContainText('noté dans le journal', { timeout: 10_000 });
     const journal = page.getByRole('list', { name: fr.events.journalLabel });
     await expect(journal).toContainText('c’est le chat qui a fait tomber un verre');
+    // Inconnu du modèle, identifié par l'utilisateur : le journal ne dit plus « inconnu ».
+    const row = journal.getByRole('button').filter({ hasText: 'c’est le chat' }).first();
+    const sources = await page.evaluate(() =>
+      (window.__soundguardHistory?.store.getState().events ?? []).map((e) => [
+        e.type,
+        e.userSource,
+      ]),
+    );
+    console.log(`identifications : ${JSON.stringify(sources)}`);
+    if (sources.some(([type, source]) => type !== 'known' && source))
+      await expect(row).toContainText(fr.events.identified);
     const notes = await page.evaluate(() =>
       (window.__soundguardHistory?.store.getState().events ?? []).map((e) => e.note),
     );

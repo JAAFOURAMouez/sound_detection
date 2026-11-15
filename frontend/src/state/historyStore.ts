@@ -4,6 +4,7 @@
 import { createStore, useStore } from 'zustand';
 import type { EventStore, SessionRecord } from '../events/db';
 import type { EventChange } from '../events/engine';
+import { appendNote } from '../assistant/templates';
 import { toCsv, toJson } from '../events/exportData';
 import type { EventRecorder } from '../events/recorder';
 import type { EventType, SoundEvent } from '../events/types';
@@ -31,6 +32,8 @@ export interface HistoryState {
   setView: (view: View) => void;
   setFilters: (filters: Partial<HistoryFilters>) => void;
   updateNote: (id: string, note: string) => Promise<void>;
+  /** L'utilisateur a donné l'origine du son : elle devient son identification et rejoint la note. */
+  identify: (id: string, source: string) => Promise<void>;
   setDialogStatus: (id: string, status: SoundEvent['dialogStatus']) => Promise<void>;
   clearAll: () => Promise<void>;
   exportJson: () => string;
@@ -54,6 +57,7 @@ export interface HistoryDeps {
     | 'listEvents'
     | 'listSessions'
     | 'updateNote'
+    | 'updateUserSource'
     | 'updateDialogStatus'
     | 'clearAll'
     | 'purgeOlderThan'
@@ -97,9 +101,15 @@ export function createHistoryStore(deps: HistoryDeps) {
         const events = [...state.events];
         for (const { event } of changes) {
           const i = events.findIndex((e) => e.id === event.id);
-          // Le moteur ignore le statut du dialogue : on conserve celui déjà connu.
-          if (i >= 0)
-            events[i] = { ...event, dialogStatus: events[i]?.dialogStatus ?? event.dialogStatus };
+          // Le moteur ignore le dialogue (statut, note, identification) : on garde ce qui est connu.
+          const known = i >= 0 ? events[i] : undefined;
+          if (known)
+            events[i] = {
+              ...event,
+              dialogStatus: known.dialogStatus,
+              note: known.note || event.note,
+              ...(known.userSource ? { userSource: known.userSource } : {}),
+            };
           else events.push(event);
         }
         return { events };
@@ -122,6 +132,17 @@ export function createHistoryStore(deps: HistoryDeps) {
       set((state) => ({ events: state.events.map((e) => (e.id === id ? { ...e, note } : e)) }));
       await deps.recorder?.flush();
       await deps.store.updateNote(id, note);
+    },
+
+    async identify(id, source) {
+      const current = get().events.find((e) => e.id === id);
+      const note = appendNote(current?.note ?? '', source);
+      set((state) => ({
+        events: state.events.map((e) => (e.id === id ? { ...e, note, userSource: source } : e)),
+      }));
+      await deps.recorder?.flush();
+      await deps.store.updateNote(id, note);
+      await deps.store.updateUserSource(id, source);
     },
 
     async setDialogStatus(id, dialogStatus) {

@@ -27,10 +27,10 @@ describe('export', () => {
   it('produit un CSV lisible par un tableur', () => {
     const lines = toCsv([e]).trimEnd().split('\r\n');
     expect(lines[0]).toBe(
-      'id,session,debut,fin,duree_s,type,famille,gravite,confiance,score_max,niveau_max_db,classes,note',
+      'id,session,debut,fin,duree_s,type,famille,gravite,confiance,score_max,niveau_max_db,classes,note,origine_utilisateur',
     );
     expect(lines[1]).toBe(
-      'e1,s1,2026-11-12T22:04:12.000Z,2026-11-12T22:04:14.000Z,2.0,known,glass,2,0.850,0.660,-21.3,Glass 0.81 | Shatter 0.40,"cuisine, ""verre"" cassé"',
+      'e1,s1,2026-11-12T22:04:12.000Z,2026-11-12T22:04:14.000Z,2.0,known,glass,2,0.850,0.660,-21.3,Glass 0.81 | Shatter 0.40,"cuisine, ""verre"" cassé",',
     );
   });
 

@@ -176,6 +176,7 @@ export const fr = {
   events: {
     unknown: 'inconnu',
     drift: 'dérive',
+    identified: 'identifié',
     journalLabel: 'Événements de la session, du plus récent au plus ancien',
     open: 'en cours',
     sheetTitle: 'Événement',
@@ -183,6 +184,7 @@ export const fr = {
     type: 'Type',
     types: { known: 'reconnu', unknown: 'anomalie inconnue', drift: 'dérive de l’ambiance' },
     family: 'Famille',
+    userSource: 'Origine (selon toi)',
     when: 'Heure',
     duration: 'Durée',
     score: 'Score d’anomalie max',

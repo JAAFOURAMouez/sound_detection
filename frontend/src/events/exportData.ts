@@ -35,6 +35,7 @@ const CSV_COLUMNS = [
   'niveau_max_db',
   'classes',
   'note',
+  'origine_utilisateur',
 ] as const;
 
 /** Échappe une cellule CSV (RFC 4180) et neutralise les formules des tableurs. */
@@ -62,6 +63,7 @@ export function toCsv(events: SoundEvent[]): string {
       e.levelDbMax === null ? null : e.levelDbMax.toFixed(1),
       e.topK.map((c) => `${c.name} ${c.score.toFixed(2)}`).join(' | '),
       e.note,
+      e.userSource ?? null,
     ]
       .map(csvCell)
       .join(','),

@@ -74,6 +74,12 @@ export function EventSheet({ event, clip, onClose, onSaveNote }: EventSheetProps
           <dl className="sg-sheet__facts">
             <dt>{t.events.type}</dt>
             <dd>{t.events.types[event.type]}</dd>
+            {event.userSource && (
+              <>
+                <dt>{t.events.userSource}</dt>
+                <dd>{event.userSource}</dd>
+              </>
+            )}
             <dt>{t.events.when}</dt>
             <dd>{formatDateTime(event.start)}</dd>
             <dt>{t.events.duration}</dt>

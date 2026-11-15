@@ -35,6 +35,11 @@ export interface SoundEvent {
   closed: boolean;
   dialogStatus: DialogStatus;
   note: string;
+  /**
+   * Origine du son donnée par l'utilisateur au dialogue (« c'est le robinet qui coule »).
+   * Le type reste celui du modèle : c'est l'utilisateur, pas le classifieur, qui a identifié.
+   */
+  userSource?: string;
 }
 
 /** Observation agrégée toutes les 0,5 s. */

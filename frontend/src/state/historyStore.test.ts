@@ -28,6 +28,7 @@ function setup(stored: SoundEvent[] = []) {
     listEvents: vi.fn(() => Promise.resolve(stored)),
     listSessions: vi.fn(() => Promise.resolve([])),
     updateNote: vi.fn(() => Promise.resolve()),
+    updateUserSource: vi.fn(() => Promise.resolve()),
     updateDialogStatus: vi.fn(() => Promise.resolve()),
     clearAll: vi.fn(() => Promise.resolve()),
     purgeOlderThan: vi.fn(() => Promise.resolve(0)),
@@ -107,5 +108,21 @@ describe('statut du dialogue', () => {
     emit([{ kind: 'updated', event: ev('x', 1, { closed: false }) }]);
     expect(history.getState().events[0]?.dialogStatus).toBe('asked');
     expect(store.updateDialogStatus).toHaveBeenCalledWith('x', 'asked');
+  });
+});
+
+describe('origine donnée par l’utilisateur', () => {
+  it('identifie l’événement, rejoint la note et survit aux mises à jour du moteur', async () => {
+    const { history, store, emit } = setup();
+    emit([{ kind: 'opened', event: ev('x', 1, { type: 'unknown', family: null, closed: false }) }]);
+    await history.getState().identify('x', 'c est le robinet qui coule');
+    emit([{ kind: 'updated', event: ev('x', 1, { type: 'unknown', family: null }) }]);
+    expect(history.getState().events[0]).toMatchObject({
+      userSource: 'c est le robinet qui coule',
+      note: 'c est le robinet qui coule',
+      closed: true,
+    });
+    expect(store.updateNote).toHaveBeenCalledWith('x', 'c est le robinet qui coule');
+    expect(store.updateUserSource).toHaveBeenCalledWith('x', 'c est le robinet qui coule');
   });
 });

@@ -60,6 +60,7 @@ export class EventStore {
           ? {
               ...event,
               note: event.note || existing.note,
+              ...(existing.userSource ? { userSource: existing.userSource } : {}),
               dialogStatus:
                 event.dialogStatus === 'none' ? existing.dialogStatus : event.dialogStatus,
             }
@@ -70,6 +71,10 @@ export class EventStore {
 
   async updateNote(id: string, note: string): Promise<void> {
     await this.db.events.update(id, { note });
+  }
+
+  async updateUserSource(id: string, userSource: string): Promise<void> {
+    await this.db.events.update(id, { userSource });
   }
 
   async updateDialogStatus(id: string, dialogStatus: SoundEvent['dialogStatus']): Promise<void> {

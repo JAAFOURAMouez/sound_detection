@@ -21,14 +21,21 @@ export function formatDateTime(ms: number): string {
   return dateTimeFormat.format(ms);
 }
 
-export function eventLabel(event: Pick<SoundEvent, 'type' | 'family'>): string {
+/** Vrai si l'utilisateur a identifié un son que le modèle ne reconnaissait pas. */
+export function identifiedByUser(event: Pick<SoundEvent, 'type' | 'userSource'>): boolean {
+  return event.type !== 'known' && Boolean(event.userSource);
+}
+
+export function eventLabel(event: Pick<SoundEvent, 'type' | 'family' | 'userSource'>): string {
+  if (identifiedByUser(event)) return t.events.identified;
   if (event.type === 'drift') return t.events.drift;
   if (event.type === 'unknown' || !event.family) return t.events.unknown;
   return familyLabel(event.family);
 }
 
 /** Clé de couleur de l'événement (jeton CSS --sg-family-*). */
-export function eventColorKey(event: Pick<SoundEvent, 'type' | 'family'>): string {
+export function eventColorKey(event: Pick<SoundEvent, 'type' | 'family' | 'userSource'>): string {
+  if (identifiedByUser(event)) return 'identified';
   if (event.type === 'drift') return 'drift';
   return event.type === 'unknown' || !event.family ? 'unknown' : event.family;
 }

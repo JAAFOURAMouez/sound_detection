@@ -42,6 +42,26 @@ describe('Journal', () => {
     expect(rows[1]).toHaveTextContent(`${fr.live.severity} 2`);
   });
 
+  it('montre un son inconnu identifié par l’utilisateur comme identifié, avec son origine', () => {
+    render(
+      <Journal
+        events={[
+          ev('b', 2_000, {
+            type: 'unknown',
+            family: null,
+            note: 'c est le robinet qui coule',
+            userSource: 'c est le robinet qui coule',
+          }),
+        ]}
+        onSelect={vi.fn()}
+      />,
+    );
+    const row = screen.getByRole('button');
+    expect(row).toHaveTextContent(fr.events.identified);
+    expect(row).not.toHaveTextContent(fr.events.unknown);
+    expect(row).toHaveTextContent('c est le robinet qui coule');
+  });
+
   it('ouvre la fiche au clic (et donc au clavier)', () => {
     const onSelect = vi.fn();
     render(<Journal events={[ev('a', 1_000)]} onSelect={onSelect} />);
