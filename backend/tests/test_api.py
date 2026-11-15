@@ -101,3 +101,22 @@ def test_rate_limit_uses_forwarded_ip_only_behind_trusted_proxy():
         first = c.post("/api/chat", json=chat_body(), headers={"X-Forwarded-For": "1.1.1.1"})
         spoofed = c.post("/api/chat", json=chat_body(), headers={"X-Forwarded-For": "3.3.3.3"})
     assert (first.status_code, spoofed.status_code) == (200, 429)
+
+
+def test_report_keeps_the_user_local_time(client):
+    # Le navigateur envoie l'heure locale avec son décalage : c'est elle qui doit être citée.
+    body = {
+        "events": [
+            {
+                "type": "known",
+                "family": "alarm",
+                "family_label": "alarme",
+                "severity": 3,
+                "started_at": "2026-11-15T19:45:45+01:00",
+                "duration_s": 4,
+            }
+        ],
+        "session_minutes": 2,
+    }
+    data = client.post("/api/report", json=body).json()
+    assert data["highlights"] == ["19:45 — alarme"]

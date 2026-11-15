@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SoundEvent } from '../events/types';
+import { localIso } from '../events/report';
 import { createApi, toChatPayload } from './api';
 
 const event: SoundEvent = {
@@ -32,7 +33,7 @@ describe('toChatPayload', () => {
       family: 'glass',
       family_label: 'verre',
       duration_s: 1.5,
-      started_at: '2026-11-12T22:04:12.000Z',
+      started_at: localIso(Date.UTC(2026, 10, 12, 22, 4, 12)),
     });
     const text = JSON.stringify(payload);
     expect(text).not.toContain('session-secrete');

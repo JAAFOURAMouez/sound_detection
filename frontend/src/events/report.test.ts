@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { localReport, REPORT_MAX_EVENTS, toReportPayload } from './report';
+import { localIso, localReport, REPORT_MAX_EVENTS, toReportPayload } from './report';
 import type { SoundEvent } from './types';
 
 const ev = (over: Partial<SoundEvent> = {}): SoundEvent => ({
@@ -37,7 +37,7 @@ describe('toReportPayload', () => {
         family: 'glass',
         family_label: 'verre',
         severity: 2,
-        started_at: '2026-11-12T22:04:12.000Z',
+        started_at: localIso(Date.UTC(2026, 10, 12, 22, 4, 12)),
         duration_s: 2,
         note: 'c’est le chat',
       },
@@ -52,6 +52,18 @@ describe('toReportPayload', () => {
     const payload = toReportPayload({ ...session, endedAt: session.startedAt + 1 }, many, 0);
     expect(payload.events).toHaveLength(REPORT_MAX_EVENTS);
     expect(payload.events[0]?.note).toHaveLength(500);
+  });
+});
+
+describe('localIso', () => {
+  it('donne l’heure locale avec son décalage, au même instant', () => {
+    const ms = Date.UTC(2026, 10, 15, 18, 45, 34);
+    const iso = localIso(ms);
+    expect(iso).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+    expect(Date.parse(iso)).toBe(ms);
+    expect(iso.slice(11, 16)).toBe(
+      new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    );
   });
 });
 

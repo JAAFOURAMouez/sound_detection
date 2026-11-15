@@ -1,6 +1,6 @@
 // Client du backend de dialogue : seules des métadonnées d'événements sont envoyées.
 
-import type { ReportPayload, SessionReport } from '../events/report';
+import { localIso, type ReportPayload, type SessionReport } from '../events/report';
 import type { SoundEvent } from '../events/types';
 import { familyLabel } from '../ui/labels';
 import type { Turn } from './machine';
@@ -46,7 +46,7 @@ export function toChatPayload(event: SoundEvent, history: Turn[], message: strin
       score_max: event.scoreMax === null ? null : clamp01(event.scoreMax),
       level_db_max: event.levelDbMax,
       duration_s: Math.max(0, (event.end - event.start) / 1000),
-      started_at: new Date(event.start).toISOString(),
+      started_at: localIso(event.start),
       top: event.topK
         .slice(0, 5)
         .map((c) => ({ name: c.name.slice(0, 80), score: clamp01(c.score), family: c.family })),
