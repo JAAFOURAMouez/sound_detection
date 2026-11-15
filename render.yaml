@@ -1,0 +1,29 @@
+# Backend léger (FastAPI) sur l'offre gratuite de Render : métadonnées d'événements uniquement,
+# aucun modèle audio ici. La clé du LLM se saisit dans le tableau de bord Render (sync: false).
+services:
+  - type: web
+    name: soundguard-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install uv && uv sync --frozen --no-dev
+    startCommand: uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: LLM_PROVIDER
+        value: groq
+      - key: LLM_MODEL
+        value: openai/gpt-oss-120b
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://jaafouramouez.github.io
+      - key: TRUST_PROXY
+        value: "true"
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "20"
+      - key: LLM_TIMEOUT_SECONDS
+        value: "20"
