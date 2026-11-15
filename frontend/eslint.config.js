@@ -14,7 +14,7 @@ export default tseslint.config(
       globals: globals.browser,
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['playwright.config.ts'],
+          allowDefaultProject: ['playwright.config.ts', 'playwright.public.config.ts'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
