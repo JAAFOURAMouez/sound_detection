@@ -73,3 +73,22 @@ export class RingBuffer {
     this.written = 0;
   }
 }
+
+/**
+ * Extrait [from, to[ d'un flux dont `ring` garde la fin : son dernier échantillon est à la
+ * position `position - 1`. Null si le début est sorti du tampon (ou pas encore arrivé).
+ */
+export function clipFromRing(
+  ring: RingBuffer,
+  position: number,
+  from: number,
+  to: number,
+): Float32Array | null {
+  const oldest = position - ring.length;
+  // Tant que le tampon n'est pas plein, il contient tout le flux : on commence au début.
+  const start = ring.length < ring.capacity ? Math.max(from, oldest) : from;
+  if (start < oldest || start >= position) return null;
+  const end = Math.min(to, position);
+  if (end <= start) return null;
+  return ring.latest(position - start).slice(0, end - start);
+}

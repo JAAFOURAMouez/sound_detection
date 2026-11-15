@@ -5,10 +5,11 @@ import { EventRecorder } from '../events/recorder';
 
 export const eventStore = new EventStore();
 
-let clipSource: (() => Float32Array | null) | null = null;
+type ClipSource = (from: number, to: number) => Float32Array | null;
+let clipSource: ClipSource | null = null;
 
-/** La session audio en cours fournit l'extrait des 3 dernières secondes. */
-export function setClipSource(source: (() => Float32Array | null) | null): void {
+/** La session audio en cours fournit les extraits (positions du flux envoyé à l'analyse). */
+export function setClipSource(source: ClipSource | null): void {
   clipSource = source;
 }
 
@@ -23,6 +24,6 @@ export const recorder = new EventRecorder({
   store: eventStore,
   now: () => Date.now(),
   newId: () => crypto.randomUUID(),
-  clip: () => clipSource?.() ?? null,
+  clip: (from, to) => clipSource?.(from, to) ?? null,
   position: () => positionSource?.() ?? null,
 });

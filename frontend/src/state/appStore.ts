@@ -10,11 +10,12 @@ import {
   startCapture,
 } from '../audio/capture';
 import { type DemoSession, startDemo } from '../audio/demo';
+import { clipFromRing } from '../audio/ringBuffer';
 import { DEMO_AMBIENCE, DEMO_SAMPLES } from '../demo/samples';
 import { ClassifierClient, type Received } from '../inference/classifierClient';
 import { CALIBRATION_SECONDS, type ClassifierKind } from '../inference/config';
 import type { LoadInfo } from '../inference/messages';
-import { CLIP_SAMPLES, type EventRecorder } from '../events/recorder';
+import type { EventRecorder } from '../events/recorder';
 import { recorder as sharedRecorder, setClipSource, setPositionSource } from './services';
 
 export type AppStatus = 'idle' | 'consent' | 'calibrating' | 'monitoring' | 'paused' | 'error';
@@ -157,7 +158,7 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
         }),
       ];
       set({ source, session, lastSample: null });
-      setClipSource(() => (session.ring.length > 0 ? session.ring.latest(CLIP_SAMPLES) : null));
+      setClipSource((from, to) => clipFromRing(session.ring, c.position, from, to));
       setPositionSource(() => c.position);
       deps.recorder.startSession(source, get().classifier.kind);
       calibrate();

@@ -13,8 +13,11 @@ export interface RecorderDeps {
   store: Pick<EventStore, 'startSession' | 'endSession' | 'saveEvent' | 'recordScore'>;
   now: () => number;
   newId: () => string;
-  /** Extrait audio récent (16 kHz) pour la réécoute, gardé en mémoire vive seulement. */
-  clip?: () => Float32Array | null;
+  /**
+   * Extrait audio (16 kHz) entre deux positions du flux, pour la réécoute ; gardé en mémoire
+   * vive seulement. Null si le début n'est plus dans le tampon.
+   */
+  clip?: (from: number, to: number) => Float32Array | null;
   /** Échantillons envoyés à l'analyse jusqu'ici (null sans flux audio). */
   position?: () => number | null;
 }
@@ -23,7 +26,18 @@ export type ChangeListener = (changes: EventChange[]) => void;
 
 /** Au-delà, on considère que le score d'anomalie ne cadence plus les trames. */
 const ANOMALY_SILENCE_MS = 1_500;
-export const CLIP_SAMPLES = 3 * 16_000;
+/** Avant la première fenêtre active : la fenêtre (1 s) et un pas de marge (le score est lissé). */
+export const CLIP_LEAD_SAMPLES = 24_000;
+/** Après la dernière fenêtre active. */
+export const CLIP_TAIL_SAMPLES = 4_000;
+/** Durée maximale d'un extrait (le tampon circulaire en garde 10 s). */
+export const CLIP_MAX_SAMPLES = 6 * 16_000;
+
+interface ClipSpan {
+  id: string;
+  start: number;
+  end: number;
+}
 
 export class EventRecorder {
   private sessionId: string | null = null;
@@ -35,6 +49,7 @@ export class EventRecorder {
   private lastScoreSecond = -1;
   private mutedFlag = false;
   private readonly echo = new EchoGuard();
+  private span: ClipSpan | null = null;
   private readonly listeners = new Set<ChangeListener>();
   private writes: Promise<void> = Promise.resolve();
   /** Extraits audio par événement (jamais persistés). */
@@ -155,15 +170,32 @@ export class EventRecorder {
         this.persist(() => this.deps.store.recordScore(sessionId, t, score));
       }
     }
-    if (next.changes.length) this.emit(next.changes);
+    if (next.changes.length) this.emit(next.changes, windowEnd);
   }
 
-  private emit(changes: EventChange[]): void {
+  /**
+   * Garde l'extrait du son lui-même : de la fenêtre qui a ouvert l'événement à la dernière
+   * fenêtre active, repérées dans le flux. Pris au fil de l'événement, pas à sa clôture :
+   * celle-ci arrive après le son (et après la parole de l'assistant, qui suspend l'analyse).
+   */
+  private keepClip(change: EventChange, windowEnd: number | undefined): void {
+    const { event } = change;
+    if (event.type === 'drift' || !this.deps.clip) return;
+    if (change.kind === 'opened' && windowEnd !== undefined) {
+      this.span = { id: event.id, start: windowEnd - CLIP_LEAD_SAMPLES, end: windowEnd };
+    } else if (change.kind === 'updated' && windowEnd !== undefined && this.span?.id === event.id) {
+      this.span.end = Math.max(this.span.end, windowEnd);
+    }
+    const span = this.span;
+    if (span?.id !== event.id) return;
+    const end = Math.min(span.end + CLIP_TAIL_SAMPLES, span.start + CLIP_MAX_SAMPLES);
+    const clip = this.deps.clip(Math.max(0, span.start), end);
+    if (clip && clip.length > 0) this.clips.set(event.id, clip);
+  }
+
+  private emit(changes: EventChange[], windowEnd?: number): void {
     for (const change of changes) {
-      if (change.kind === 'closed' && change.event.type !== 'drift') {
-        const clip = this.deps.clip?.();
-        if (clip) this.clips.set(change.event.id, clip);
-      }
+      this.keepClip(change, windowEnd);
       const event: SoundEvent = change.event;
       this.persist(() => this.deps.store.saveEvent(event));
     }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RingBuffer } from './ringBuffer';
+import { clipFromRing, RingBuffer } from './ringBuffer';
 
 const seq = (from: number, to: number) =>
   Float32Array.from({ length: to - from }, (_, i) => from + i);
@@ -49,5 +49,23 @@ describe('RingBuffer', () => {
     const rb = new RingBuffer(3);
     expect(() => rb.latest(4)).toThrow();
     expect(() => rb.latest(3, new Float32Array(2))).toThrow();
+  });
+});
+
+describe('clipFromRing', () => {
+  it('extrait un intervalle du flux d’après sa position', () => {
+    const rb = new RingBuffer(10);
+    rb.push(seq(0, 25)); // flux 0..24 ; le tampon garde 15..24
+    expect(Array.from(clipFromRing(rb, 25, 17, 20) ?? [])).toEqual([17, 18, 19]);
+    expect(Array.from(clipFromRing(rb, 25, 22, 40) ?? [])).toEqual([22, 23, 24]);
+  });
+
+  it('refuse un début sorti du tampon, sauf tant qu’il n’est pas plein', () => {
+    const full = new RingBuffer(10);
+    full.push(seq(0, 25));
+    expect(clipFromRing(full, 25, 10, 20)).toBeNull();
+    const partial = new RingBuffer(10);
+    partial.push(seq(0, 4));
+    expect(Array.from(clipFromRing(partial, 4, -5, 3) ?? [])).toEqual([0, 1, 2]);
   });
 });

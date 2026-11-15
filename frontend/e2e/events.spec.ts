@@ -70,6 +70,44 @@ test.describe('événements et historique', () => {
     await expect(page.getByTestId('timeline')).toBeVisible();
   });
 
+  test('l’extrait de réécoute contient le son, pas le calme qui suit', async ({ page }) => {
+    await startDemo(page);
+    await page.waitForTimeout(2_000);
+    await page.getByRole('button', { name: fr.demo.samples['glass-breaking'] }).click();
+    const clipStats = () =>
+      page.evaluate(() => {
+        const h = window.__soundguardHistory;
+        const session = h?.recorder.session;
+        const event = (h?.store.getState().events ?? []).find(
+          (e) => e.sessionId === session && e.closed && e.type !== 'drift',
+        );
+        const clip = event ? h?.recorder.clips.get(event.id) : undefined;
+        if (!clip) return null;
+        // Niveau par tranche de 0,25 s : le son doit dominer nettement le reste de l'extrait.
+        const slice = 4_000;
+        const rms: number[] = [];
+        for (let i = 0; i + slice <= clip.length; i += slice) {
+          let sum = 0;
+          for (let j = i; j < i + slice; j++) sum += (clip[j] ?? 0) ** 2;
+          rms.push(Math.sqrt(sum / slice));
+        }
+        return { seconds: clip.length / 16_000, rms };
+      });
+    await expect.poll(clipStats, { timeout: 20_000 }).not.toBeNull();
+    const stats = await clipStats();
+    if (!stats) throw new Error('extrait absent');
+    const db = stats.rms.map((r) => 20 * Math.log10(Math.max(r, 1e-6)));
+    console.log(
+      `extrait : ${stats.seconds.toFixed(2)} s, niveaux ${db.map((d) => d.toFixed(0)).join(' ')} dBFS`,
+    );
+    const loudest = Math.max(...db);
+    const quietest = Math.min(...db);
+    expect(stats.seconds).toBeGreaterThanOrEqual(1);
+    expect(loudest - quietest).toBeGreaterThan(12);
+    // Le pic n'est pas dans la dernière tranche : l'extrait ne s'arrête pas avant le son.
+    expect(db.indexOf(loudest)).toBeLessThan(db.length - 1);
+  });
+
   test('radar et frise restent fluides avec 500 événements', async ({ page }) => {
     await startDemo(page);
     const inserted = await page.evaluate(async () => {

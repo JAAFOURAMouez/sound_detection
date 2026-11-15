@@ -16,7 +16,7 @@ function setup(position?: () => number | null) {
     store,
     now: () => t,
     newId: () => `id${String(++id)}`,
-    clip: () => new Float32Array(48_000).fill(0.1),
+    clip: (from: number, to: number) => new Float32Array(to - from).fill(0.1),
     ...(position ? { position } : {}),
   });
   const changes: EventChange[] = [];
@@ -57,8 +57,10 @@ describe('EventRecorder', () => {
   it('crée, persiste et clôt un événement inconnu, avec son extrait audio en mémoire', async () => {
     const { recorder, store, changes, advance } = setup();
     recorder.startSession('demo', 'yamnet');
+    let end = 16_000;
     for (const s of [0.1, 0.1, 0.8, 0.6, 0.1, 0.1]) {
-      recorder.onAnomaly(anomaly(s));
+      recorder.onAnomaly(anomaly(s, end));
+      end += 8_000;
       advance(500);
     }
     await recorder.flush();
@@ -66,7 +68,8 @@ describe('EventRecorder', () => {
     const closed = changes.at(-1)?.event;
     expect(closed).toMatchObject({ type: 'unknown', scoreMax: 0.8, closed: true });
     expect(store.saveEvent).toHaveBeenCalledTimes(3);
-    expect(recorder.clips.get(closed?.id ?? '')?.length).toBe(48_000);
+    // Du début de la fenêtre qui a ouvert (32 000 − 24 000) à la dernière active (40 000 + 4 000).
+    expect(recorder.clips.get(closed?.id ?? '')?.length).toBe(36_000);
     // Score à 1 Hz : 6 trames sur 3 s → 3 enregistrements.
     expect(store.recordScore).toHaveBeenCalledTimes(3);
   });
@@ -186,5 +189,36 @@ describe('voix de l’assistant repérée dans le flux', () => {
     recorder.onResult({ ...result('voice'), windowEndSample: 180_000 });
     recorder.onAnomaly(anomaly(0.95, 300_000));
     expect(changes).toEqual([]);
+  });
+});
+
+describe('extrait pour la réécoute', () => {
+  it('garde le son lui-même, pas ce qui suit la clôture', () => {
+    const calls: [number, number][] = [];
+    const recorder = new EventRecorder({
+      store: {
+        startSession: () => Promise.resolve(),
+        endSession: () => Promise.resolve(),
+        saveEvent: () => Promise.resolve(),
+        recordScore: () => Promise.resolve(),
+      },
+      now: () => 0,
+      newId: () => 'e1',
+      clip: (from, to) => {
+        calls.push([from, to]);
+        return new Float32Array(to - from);
+      },
+    });
+    recorder.startSession('mic', 'yamnet');
+    recorder.onAnomaly(anomaly(0.9, 160_000));
+    recorder.onAnomaly(anomaly(0.9, 168_000));
+    // Longue pause (l'assistant parlait), puis le calme revient bien plus tard.
+    recorder.onAnomaly(anomaly(0.1, 400_000));
+    recorder.onAnomaly(anomaly(0.1, 408_000));
+    for (const [from, to] of calls) {
+      expect(from).toBe(136_000);
+      expect(to).toBeLessThanOrEqual(172_000);
+    }
+    expect(recorder.clips.get('e1')?.length).toBe(36_000);
   });
 });
