@@ -3,7 +3,7 @@ import type { Received } from '../inference/classifierClient';
 import type { EventChange } from './engine';
 import { EventRecorder } from './recorder';
 
-function setup() {
+function setup(position?: () => number | null) {
   let t = 1_000_000;
   let id = 0;
   const store = {
@@ -17,6 +17,7 @@ function setup() {
     now: () => t,
     newId: () => `id${String(++id)}`,
     clip: () => new Float32Array(48_000).fill(0.1),
+    ...(position ? { position } : {}),
   });
   const changes: EventChange[] = [];
   recorder.subscribe((c) => changes.push(...c));
@@ -40,8 +41,8 @@ const result = (
   receivedAt: 0,
 });
 
-const anomaly = (score: number): Received<'anomaly'> => ({
-  windowEndSample: 0,
+const anomaly = (score: number, windowEndSample = 0): Received<'anomaly'> => ({
+  windowEndSample,
   raw: score,
   score,
   zReconstruction: 0,
@@ -136,5 +137,54 @@ describe('sourdine pendant la parole de l’assistant', () => {
     recorder.setMuted(false);
     recorder.onAnomaly(anomaly(0.9));
     expect(changes.map((c) => c.kind)).toEqual(['opened']);
+  });
+});
+
+describe('voix de l’assistant repérée dans le flux', () => {
+  it('ignore les fenêtres en retard qui contiennent la voix, garde celles d’avant et d’après', () => {
+    let sent = 160_000; // 10 s envoyées à l'analyse
+    const { recorder, changes, advance } = setup(() => sent);
+    recorder.startSession('mic', 'yamnet');
+
+    // L'assistant parle 3 s ; la sourdine est levée dès la fin de la parole.
+    recorder.setMuted(true);
+    sent += 48_000;
+    recorder.setMuted(false);
+    expect(recorder.muted).toBe(false);
+
+    // Le worker rend ensuite, en retard, les fenêtres de la période où il parlait.
+    for (let end = 168_000; end <= 224_000; end += 8_000) {
+      expect(recorder.isEcho(end)).toBe(true);
+      recorder.onAnomaly(anomaly(0.95, end));
+      advance(500);
+    }
+    expect(changes).toEqual([]);
+
+    // Une fenêtre entièrement après la traîne (1 s) compte de nouveau.
+    expect(recorder.isEcho(240_000)).toBe(false);
+    recorder.onAnomaly(anomaly(0.95, 240_000));
+    expect(changes.map((c) => c.kind)).toEqual(['opened']);
+  });
+
+  it('garde une fenêtre d’avant la parole même reçue pendant la sourdine', () => {
+    let sent = 160_000;
+    const { recorder, changes } = setup(() => sent);
+    recorder.startSession('mic', 'yamnet');
+    recorder.setMuted(true);
+    sent += 16_000;
+    recorder.onAnomaly(anomaly(0.95, 160_000));
+    expect(changes.map((c) => c.kind)).toEqual(['opened']);
+  });
+
+  it('ne compte pas une classification qui contient la voix', () => {
+    let sent = 160_000;
+    const { recorder, changes } = setup(() => sent);
+    recorder.startSession('mic', 'yamnet');
+    recorder.setMuted(true);
+    sent += 32_000;
+    recorder.setMuted(false);
+    recorder.onResult({ ...result('voice'), windowEndSample: 180_000 });
+    recorder.onAnomaly(anomaly(0.95, 300_000));
+    expect(changes).toEqual([]);
   });
 });

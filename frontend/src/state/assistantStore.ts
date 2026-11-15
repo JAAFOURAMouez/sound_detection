@@ -48,13 +48,16 @@ export interface AssistantDeps {
   now: () => number;
   /** Délai d'écoute sans réponse avant de rendre la main. */
   listenTimeoutMs?: number;
-  /** Sourdine maintenue après la parole (la fenêtre d'analyse dure 1 s). */
+  /**
+   * Sourdine maintenue après la parole. La traîne utile (réverbération, fenêtre d'analyse de
+   * 1 s, retard du worker) est gérée par l'enregistreur, en échantillons du flux.
+   */
   muteTailMs?: number;
 }
 
 export function createAssistantStore(deps: AssistantDeps) {
   const listenTimeout = deps.listenTimeoutMs ?? 25_000;
-  const muteTail = deps.muteTailMs ?? 1_500;
+  const muteTail = deps.muteTailMs ?? 0;
   let speechToken = 0;
   let unmuteTimer: ReturnType<typeof setTimeout> | null = null;
   let listenTimer: ReturnType<typeof setTimeout> | null = null;

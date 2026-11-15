@@ -73,7 +73,7 @@ function fakeRecorder() {
     onResult: vi.fn(),
     onAnomaly: vi.fn(),
     onDrift: vi.fn(),
-    muted: false,
+    isEcho: () => false,
   };
 }
 

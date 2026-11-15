@@ -5,6 +5,7 @@
 import type { Received } from '../inference/classifierClient';
 import type { EventStore } from './db';
 import { ContextTracker } from './context';
+import { EchoGuard } from './echoGuard';
 import { type EngineState, type EventChange, initialEngineState, step } from './engine';
 import type { Frame, SoundEvent } from './types';
 
@@ -14,6 +15,8 @@ export interface RecorderDeps {
   newId: () => string;
   /** Extrait audio récent (16 kHz) pour la réécoute, gardé en mémoire vive seulement. */
   clip?: () => Float32Array | null;
+  /** Échantillons envoyés à l'analyse jusqu'ici (null sans flux audio). */
+  position?: () => number | null;
 }
 
 export type ChangeListener = (changes: EventChange[]) => void;
@@ -31,6 +34,7 @@ export class EventRecorder {
   private lastAnomalyAt = Number.NEGATIVE_INFINITY;
   private lastScoreSecond = -1;
   private mutedFlag = false;
+  private readonly echo = new EchoGuard();
   private readonly listeners = new Set<ChangeListener>();
   private writes: Promise<void> = Promise.resolve();
   /** Extraits audio par événement (jamais persistés). */
@@ -49,10 +53,23 @@ export class EventRecorder {
 
   /**
    * Suspend la création d'événements pendant que la synthèse vocale parle, pour que
-   * l'assistant ne se détecte pas lui-même. Les trames reçues sont ignorées.
+   * l'assistant ne se détecte pas lui-même. Avec un flux audio, ce sont les fenêtres qui
+   * recouvrent la parole (et sa traîne) qui sont ignorées, quel que soit leur retard ;
+   * sinon, les trames reçues pendant la sourdine.
    */
   setMuted(muted: boolean): void {
+    if (muted === this.mutedFlag) return;
     this.mutedFlag = muted;
+    const position = this.deps.position?.() ?? null;
+    if (position === null) return;
+    if (muted) this.echo.begin(position);
+    else this.echo.end(position);
+  }
+
+  /** Vrai si la fenêtre qui se termine à `windowEnd` contient la voix de l'assistant. */
+  isEcho(windowEnd: number): boolean {
+    if ((this.deps.position?.() ?? null) === null) return this.mutedFlag;
+    return this.echo.covers(windowEnd);
   }
 
   startSession(source: 'mic' | 'demo', classifier: string): string {
@@ -86,12 +103,13 @@ export class EventRecorder {
 
   onResult(result: Received<'result'>): void {
     this.lastResult = result;
-    if (this.deps.now() - this.lastAnomalyAt > ANOMALY_SILENCE_MS) this.frame(null, null);
+    if (this.deps.now() - this.lastAnomalyAt > ANOMALY_SILENCE_MS)
+      this.frame(null, null, result.windowEndSample);
   }
 
   onAnomaly(anomaly: Received<'anomaly'>): void {
     this.lastAnomalyAt = this.deps.now();
-    this.frame(anomaly.score, anomaly.levelDb);
+    this.frame(anomaly.score, anomaly.levelDb, anomaly.windowEndSample);
   }
 
   onDrift(drift: Received<'drift'>): void {
@@ -108,9 +126,12 @@ export class EventRecorder {
     return this.writes;
   }
 
-  private frame(score: number | null, levelDb: number | null): void {
+  private frame(score: number | null, levelDb: number | null, windowEnd: number): void {
     const sessionId = this.sessionId;
-    if (!sessionId || this.mutedFlag) return;
+    if (!sessionId) return;
+    // La classification retenue peut venir d'une fenêtre voisine : elle compte aussi.
+    const result = this.lastResult;
+    if (this.isEcho(windowEnd) || (result && this.isEcho(result.windowEndSample))) return;
     const t = this.deps.now();
     const frame: Frame = {
       t,
@@ -120,12 +141,12 @@ export class EventRecorder {
       top: this.lastResult?.top ?? [],
       drift: this.drift,
     };
-    const result = step(this.state, frame, {
+    const next = step(this.state, frame, {
       sessionId,
       newId: this.deps.newId,
       context: (before) => this.context.summary(before),
     });
-    this.state = result.state;
+    this.state = next.state;
     this.context.push(frame);
     if (score !== null) {
       const second = Math.floor(t / 1_000);
@@ -134,7 +155,7 @@ export class EventRecorder {
         this.persist(() => this.deps.store.recordScore(sessionId, t, score));
       }
     }
-    if (result.changes.length) this.emit(result.changes);
+    if (next.changes.length) this.emit(next.changes);
   }
 
   private emit(changes: EventChange[]): void {

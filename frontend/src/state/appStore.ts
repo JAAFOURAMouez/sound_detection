@@ -15,7 +15,7 @@ import { ClassifierClient, type Received } from '../inference/classifierClient';
 import { CALIBRATION_SECONDS, type ClassifierKind } from '../inference/config';
 import type { LoadInfo } from '../inference/messages';
 import { CLIP_SAMPLES, type EventRecorder } from '../events/recorder';
-import { recorder as sharedRecorder, setClipSource } from './services';
+import { recorder as sharedRecorder, setClipSource, setPositionSource } from './services';
 
 export type AppStatus = 'idle' | 'consent' | 'calibrating' | 'monitoring' | 'paused' | 'error';
 export type ModelStatus = 'idle' | 'loading' | 'ready' | 'error';
@@ -58,7 +58,7 @@ export interface AppDeps {
   calibrationSeconds: number;
   recorder: Pick<
     EventRecorder,
-    'startSession' | 'endSession' | 'onResult' | 'onAnomaly' | 'onDrift' | 'muted'
+    'startSession' | 'endSession' | 'onResult' | 'onAnomaly' | 'onDrift' | 'isEcho'
   >;
   /** Appelé à l'arrêt de l'écoute (fin du dialogue en cours). */
   onStop: () => void;
@@ -125,7 +125,7 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
       });
       created.on('anomaly', (anomaly) => {
         // Pendant que l'assistant parle, ses propres paroles ne comptent pas comme alertes.
-        const counted = anomaly.alert && !deps.recorder.muted;
+        const counted = anomaly.alert && !deps.recorder.isEcho(anomaly.windowEndSample);
         set((state) => ({ anomaly, alerts: state.alerts + (counted ? 1 : 0) }));
         deps.recorder.onAnomaly(anomaly);
       });
@@ -158,6 +158,7 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
       ];
       set({ source, session, lastSample: null });
       setClipSource(() => (session.ring.length > 0 ? session.ring.latest(CLIP_SAMPLES) : null));
+      setPositionSource(() => c.position);
       deps.recorder.startSession(source, get().classifier.kind);
       calibrate();
     };
@@ -260,6 +261,7 @@ export function createAppStore(overrides: Partial<AppDeps> = {}) {
         deps.recorder.endSession();
         deps.onStop();
         setClipSource(null);
+        setPositionSource(null);
         client?.reset();
         set({
           status: 'idle',
