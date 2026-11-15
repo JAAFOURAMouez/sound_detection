@@ -49,9 +49,23 @@ ne convient plus.
 
 ## Liste de contrôle avant mise en ligne
 
-- [ ] Aucune clé dans le dépôt, l'historique git ou `frontend/dist`
-- [ ] CORS limité à l'URL du frontend
-- [ ] Mode démonstration fonctionnel sans micro ni backend
-- [ ] Écran de consentement et indicateur micro actif
-- [ ] Licences des modèles, jeux de données et échantillons listées dans le README
-- [ ] Test sur un navigateur vierge, sur ordinateur et sur téléphone
+État au 15 novembre 2026 (frontend : <https://jaafouramouez.github.io/sound_detection/>,
+backend : <https://soundguard-api.onrender.com/api/health>).
+
+- [x] Aucune clé dans le dépôt, l'historique git ou `frontend/dist` : la CI et le déploiement
+      cherchent les motifs de clé dans `dist/` ; la clé est saisie dans Render (`sync: false`).
+- [x] CORS limité à l'URL du frontend : `ALLOWED_ORIGINS=https://jaafouramouez.github.io`.
+- [x] Mode démonstration fonctionnel sans micro ni backend : vérifié après chaque déploiement
+      par `npm run test:public` (navigateur vierge, serveur bloqué, ordinateur et téléphone émulé).
+- [x] Écran de consentement et indicateur micro actif (tests de bout en bout).
+- [x] Licences des modèles, jeux de données et échantillons listées dans le README.
+- [ ] Test sur un vrai téléphone et sur Safari : à faire à la main (seule l'émulation mobile de
+      Chromium est automatisée).
+
+Notes d'exploitation :
+
+- Le frontend est publié par `.github/workflows/deploy.yml` quand la CI est verte sur `main` ;
+  l'adresse du backend vient de la variable de dépôt `VITE_API_URL` (pas un secret).
+- Le backend gratuit s'endort après 15 min sans trafic : la page relance l'appel de réveil
+  toutes les 15 s pendant 3 min, et l'assistant répond localement en attendant.
+- Mémoire du backend mesurée en local avec les commandes de `render.yaml` : environ 75 Mo.
